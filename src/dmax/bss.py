@@ -1,6 +1,7 @@
 import datetime as dt
 import json
 from base64 import b64encode
+from collections.abc import Generator
 from typing import Any, Mapping
 
 import httpx
@@ -39,84 +40,6 @@ class Proposal(BaseModel):
     duration: dt.timedelta
     mail_in: bool
     proprietary: bool
-
-
-class BSSParser:
-    def esafs(self, json_data: str) -> list[Esaf]:
-        data = json.loads(json_data)
-        esafs_ = [self._esaf(datum) for datum in data]
-        return esafs_
-
-    def esaf(self, json_data: str) -> Esaf:
-        data = json.loads(json_data)
-        return self._esaf(data)
-
-    def _esaf(self, data: Mapping[str, Any]) -> Esaf:
-        # Scheduling dates
-        dt_format = "%Y-%m-%d %H:%M:%S"
-        start = dt.datetime.strptime(data["experimentStartDate"], dt_format)
-        end = dt.datetime.strptime(data["experimentEndDate"], dt_format)
-        # Users
-        users = [
-            User(
-                badge=user["badge"],
-                first_name=user["firstName"],
-                last_name=user["lastName"],
-                email=user.get("email"),
-                is_pi=user["piFlag"] == "Yes",
-                institution=None,
-            )
-            for user in data["experimentUsers"]
-        ]
-        # Create the ESAF
-        return Esaf(
-            title=data["esafTitle"],
-            description=data["description"],
-            esaf_id=str(data["esafId"]),
-            sector=data["sector"],
-            status=data["esafStatus"],
-            start=start,
-            end=end,
-            users=users,
-        )
-
-    def proposals(self, json_data: str) -> list[Proposal]:
-        data = json.loads(json_data)
-        return [self._proposal(datum) for datum in data]
-
-    def proposal(self, json_data: str) -> Proposal:
-        data = json.loads(json_data)
-        return self._proposal(data)
-
-    def _proposal(self, data: Mapping[str, Any]) -> Proposal:
-        # Scheduling dates
-        # dt_format = "%Y-%m-%d %H:%M:%S"
-        start = dt.datetime.fromisoformat(data["startTime"])
-        end = dt.datetime.fromisoformat(data["endTime"])
-        duration = dt.timedelta(seconds=data["duration"])
-        # Create users for the proposal
-        users = [
-            User(
-                badge=user_data["badge"],
-                first_name=user_data["firstName"],
-                last_name=user_data["lastName"],
-                is_pi=user_data["piFlag"],
-                email="",
-                institution=user_data["institution"],
-            )
-            for user_data in data["experimenters"]
-        ]
-        # Create the proposal itself
-        return Proposal(
-            title=data["title"],
-            proposal_id=f"{data['id']:07}",
-            users=users,
-            start=start,
-            end=end,
-            duration=duration,
-            mail_in=(data["mailInFlag"] == "Yes"),
-            proprietary=(data["proprietaryFlag"] == "Yes"),
-        )
 
 
 def encode(string: str) -> bytes:
@@ -170,7 +93,164 @@ def raise_for_status(response: httpx.Response) -> httpx.Response:
     )
 
 
-class BssAsyncClient:
+def _to_proposal(data: Mapping[str, Any]) -> Proposal:
+    # Scheduling dates
+    # dt_format = "%Y-%m-%d %H:%M:%S"
+    start = dt.datetime.fromisoformat(data["startTime"])
+    end = dt.datetime.fromisoformat(data["endTime"])
+    duration = dt.timedelta(seconds=data["duration"])
+    # Create users for the proposal
+    users = [
+        User(
+            badge=user_data["badge"],
+            first_name=user_data["firstName"],
+            last_name=user_data["lastName"],
+            is_pi=user_data["piFlag"],
+            email="",
+            institution=user_data["institution"],
+        )
+        for user_data in data["experimenters"]
+    ]
+    # Create the proposal itself
+    return Proposal(
+        title=data["title"],
+        proposal_id=f"{data['id']:07}",
+        users=users,
+        start=start,
+        end=end,
+        duration=duration,
+        mail_in=(data["mailInFlag"] == "Yes"),
+        proprietary=(data["proprietaryFlag"] == "Yes"),
+    )
+
+
+def _request_proposals(beamline: str, cycle: str | None, station_name: bytes, context):
+    """Load the proposals for a given *beamline* during a given *cycle*."""
+    url = f"bss/stationProposals/{station_name!r}/{encode(beamline)!r}"
+    params = {"runName": cycle} if cycle else None
+    json_data = yield context.get(url, params=params)
+    # response = yield context.get(url, params=params)
+    data = json.loads(json_data)
+    return [_to_proposal(datum) for datum in data]
+
+
+def _request_proposal(
+    proposal_id: str, cycle: str | None, station_name: bytes, context
+):
+    """Load the given proposal on a given *beamline* during a given *cycle*."""
+    url = f"bss/stationProposalsById/{station_name!r}/{proposal_id}"
+    params = {"runName": cycle} if cycle else None
+    json_data = yield context.get(url, params=params)
+    data = json.loads(json_data)
+    return _to_proposal(data)
+
+
+def _to_esaf(data: Mapping[str, Any]) -> Esaf:
+    # Scheduling dates
+    dt_format = "%Y-%m-%d %H:%M:%S"
+    start = dt.datetime.strptime(data["experimentStartDate"], dt_format)
+    end = dt.datetime.strptime(data["experimentEndDate"], dt_format)
+    # Users
+    users = [
+        User(
+            badge=user["badge"],
+            first_name=user["firstName"],
+            last_name=user["lastName"],
+            email=user.get("email"),
+            is_pi=user["piFlag"] == "Yes",
+            institution=None,
+        )
+        for user in data["experimentUsers"]
+    ]
+    # Create the ESAF
+    return Esaf(
+        title=data["esafTitle"],
+        description=data["description"],
+        esaf_id=str(data["esafId"]),
+        sector=data["sector"],
+        status=data["esafStatus"],
+        start=start,
+        end=end,
+        users=users,
+    )
+
+
+def _request_esaf(
+    esaf_id: str, station_name: bytes, context
+) -> Generator[httpx.Request, str, Esaf]:
+    url = f"esaf/stationEsafsById/{station_name!r}/{esaf_id}"
+    json_data = yield context.get(url)
+    return _to_esaf(json.loads(json_data))
+
+
+def _request_esafs(
+    beamline: str, year: str | None, station_name: bytes, context
+) -> Generator[httpx.Request, str, list[Esaf]]:
+    """Load the ESAF's for the given *beamline* and *year*."""
+    url = f"esaf/stationEsafs/{station_name!r}/{encode(beamline)!r}"
+    params = {"year": year} if year else None
+    json_data = yield context.get(url, params=params)
+    data = json.loads(json_data)
+    esafs_ = [_to_esaf(datum) for datum in data]
+    return esafs_
+
+
+class SyncContext:
+    _client: httpx.Client
+    ClientClass = httpx.Client
+
+    def __init__(self, auth, base_uri):
+        self.auth = auth
+        self.base_uri = base_uri
+
+    @property
+    def client(self) -> httpx.AsyncClient | httpx.Client:
+        if not hasattr(self, "_client"):
+            # API certificates are not signed by a trusted local issuer
+            # If that changes, set `verify=True`
+            self._client = self.ClientClass(
+                base_url=self.base_uri, auth=self.auth, verify=False
+            )
+        return self._client
+
+    def serve_requests(self, requests):
+        # Do the requests one at a time
+        response = None
+        return_value = None
+        while True:
+            try:
+                request = requests.send(response)
+            except StopIteration as exc:
+                return_value = exc.value
+                break
+            response = self.client.send(request)
+            response = raise_for_status(response).text
+        return return_value
+
+    def get(self, url: str, *args, **kwargs):
+        url = url.removesuffix("/b''")
+        return self.client.build_request("GET", url, *args, **kwargs)
+
+
+class AsyncContext(SyncContext):
+    ClientClass = httpx.AsyncClient
+
+    async def serve_requests(self, requests):
+        # Do the requests one at a time
+        response = None
+        return_value = None
+        while True:
+            try:
+                request = requests.send(response)
+            except StopIteration as exc:
+                return_value = exc.value
+                break
+            response = await self.client.send(request)
+            response = raise_for_status(response).text
+        return return_value
+
+
+class BssSyncClient:
     """Client for the APS data management REST API.
 
     REST API Endpoints
@@ -184,9 +264,8 @@ class BssAsyncClient:
     * double base64 encoded bytestring
     """
 
-    _client: httpx.AsyncClient
+    ContextClass = SyncContext
     base_uri: str
-    parser = BSSParser()
     auth: httpx.Auth
 
     def __init__(self, username: str, password: str, station_name: str, uri: str):
@@ -202,6 +281,77 @@ class BssAsyncClient:
         self.base_uri = uri
         self.auth = DMAuth(username=username, password=password, base_uri=self.base_uri)
         self.station_name = encode(station_name)
+        self.context = self.ContextClass(self.auth, uri)
+
+    def esafs(self, beamline: str = "", year: str | None = None) -> list[Esaf]:
+        """Load the ESAF's for the given *beamline* and *year*."""
+        requests = _request_esafs(
+            beamline=beamline,
+            year=year,
+            station_name=self.station_name,
+            context=self.context,
+        )
+        return self.context.serve_requests(requests)
+
+    def esaf(self, esaf_id: str) -> Esaf:
+        """Load the ESAF's for the given *sector* and *year*."""
+        requests = _request_esaf(esaf_id, self.station_name, self.context)
+        return self.context.serve_requests(requests)
+
+    def proposals(self, beamline: str = "", cycle: str | None = None) -> list[Proposal]:
+        """Load the proposals for a given *beamline* during a given *cycle*."""
+        requests = _request_proposals(
+            beamline=beamline,
+            cycle=cycle,
+            station_name=self.station_name,
+            context=self.context,
+        )
+        return self.context.serve_requests(requests)
+
+    def proposal(self, proposal_id: str, cycle: str | None = None) -> Proposal:
+        """Load the given proposal on a given *beamline* during a given *cycle*."""
+        requests = _request_proposal(
+            proposal_id=proposal_id,
+            cycle=cycle,
+            station_name=self.station_name,
+            context=self.context,
+        )
+        return self.context.serve_requests(requests)
+
+
+class BssAsyncClient:
+    """Client for the APS data management REST API.
+
+    REST API Endpoints
+    ==================
+
+    - /dm/esaf/stationEsafs/{station_name*}/{beamline_name*}?year={year}
+    - /dm/esaf/stationEsafsById/{station_name*}/{esaf_id}
+    - /dm/bss/stationProposals/{station_name*}/{beamline_name*}?runName={run}
+    - /dm/bss/stationProposalsById/{station_name*}/{proposal_id}?runName={run}
+
+    * double base64 encoded bytestring
+    """
+
+    ContextClass = AsyncContext
+    _client: httpx.AsyncClient
+    base_uri: str
+    auth: httpx.Auth
+
+    def __init__(self, username: str, password: str, station_name: str, uri: str):
+        """*username*, *password*, and *station_name* are all assigned by the
+        data management group.
+
+        """
+        # Standardize the host URI
+        uri = uri.rstrip("/")
+        if uri.split("/")[-1] != "dm":
+            # Add the 'dm' prefix for paths
+            uri = f"{uri}/dm"
+        self.base_uri = uri
+        self.auth = DMAuth(username=username, password=password, base_uri=self.base_uri)
+        self.station_name = encode(station_name)
+        self.context = self.ContextClass(self.auth, uri)
 
     @property
     def client(self) -> httpx.AsyncClient:
@@ -224,30 +374,40 @@ class BssAsyncClient:
 
     async def esafs(self, beamline: str = "", year: str | None = None) -> list[Esaf]:
         """Load the ESAF's for the given *beamline* and *year*."""
-        url = f"esaf/stationEsafs/{self.station_name!r}/{encode(beamline)!r}"
-        params = {"year": year} if year else None
-        response = await self._http_get(url, params=params)
-        return self.parser.esafs(response.text)
+        requests = _request_esafs(
+            beamline=beamline,
+            year=year,
+            station_name=self.station_name,
+            context=self.context,
+        )
+        return await self.context.serve_requests(requests)
 
     async def esaf(self, esaf_id: str) -> Esaf:
         """Load the ESAF's for the given *sector* and *year*."""
-        url = f"esaf/stationEsafsById/{self.station_name!r}/{esaf_id}"
-        response = await self._http_get(url)
-        return self.parser.esaf(response.text)
+        requests = _request_esaf(esaf_id, self.station_name, self.context)
+        return await self.context.serve_requests(requests)
 
-    async def proposals(self, beamline: str = "", cycle: str | None = None):
+    async def proposals(
+        self, beamline: str = "", cycle: str | None = None
+    ) -> list[Proposal]:
         """Load the proposals for a given *beamline* during a given *cycle*."""
-        url = f"bss/stationProposals/{self.station_name!r}/{encode(beamline)!r}"
-        params = {"runName": cycle} if cycle else None
-        response = await self._http_get(url, params=params)
-        return self.parser.proposals(response.text)
+        requests = _request_proposals(
+            beamline=beamline,
+            cycle=cycle,
+            station_name=self.station_name,
+            context=self.context,
+        )
+        return await self.context.serve_requests(requests)
 
     async def proposal(self, proposal_id: str, cycle: str | None = None):
         """Load the given proposal on a given *beamline* during a given *cycle*."""
-        url = f"bss/stationProposalsById/{self.station_name!r}/{proposal_id}"
-        params = {"runName": cycle} if cycle else None
-        response = await self._http_get(url, params=params)
-        return self.parser.proposal(response.text)
+        requests = _request_proposal(
+            proposal_id=proposal_id,
+            cycle=cycle,
+            station_name=self.station_name,
+            context=self.context,
+        )
+        return await self.context.serve_requests(requests)
 
 
 # -----------------------------------------------------------------------------

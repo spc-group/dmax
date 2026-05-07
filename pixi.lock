@@ -198,11 +198,12 @@ packages:
 - pypi: ./
   name: dmax
   version: 0.0.0
-  sha256: 5dde39b49a8bc7d040767bea7e5881e9d563c7b5d48531a738fe97841674cb4b
+  sha256: ce4d1dce5bd84278714e4a4692134bb7a38032b489c3b1c94fe2162f1af8474b
   requires_dist:
   - httpx
   - stamina
   - pydantic
+  - typing-extensions
   requires_python: '>=3.7'
 - pypi: https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl
   name: h11

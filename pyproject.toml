@@ -14,7 +14,7 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 keywords = []
-dependencies = ["httpx", "stamina", "pydantic"]
+dependencies = ["httpx", "stamina", "pydantic", "typing_extensions"]
 
 [dependency-groups]
 dev = ["pytest", "pytest-httpx", "pytest-asyncio", "black", "ruff", "isort", "mypy", ]
@@ -71,7 +71,7 @@ lint-all = [
 ]
 check-types = "mypy"
 make-docs = "make html --directory=docs/"
-tests = "pytest -Werror"
+tests = "pytest -Werror -v"
 
 [tool.pixi.feature.dev.tasks.lint]
 args = [

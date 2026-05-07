@@ -3,6 +3,7 @@ import pytest
 import stamina
 
 from dmax import bss
+from dmax.testing import maybe_await
 
 beamlines = [
     {
@@ -108,21 +109,30 @@ base_uri = "http://localhost:12345"
 
 
 @pytest.fixture()
-def api():
+def api(request):
     stamina.set_testing(True)
-    return bss.BssAsyncClient(
-        username="", password="", station_name="25IDC", uri=base_uri
-    )
+    if getattr(request, "param", "async") == "async":
+        client = bss.BssAsyncClient(
+            username="", password="", station_name="25IDC", uri=base_uri
+        )
+    else:
+        client = bss.BssSyncClient(
+            username="", password="", station_name="25IDC", uri=base_uri
+        )
+    return client
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("api", ["sync", "async"], indirect=True)
 async def test_get_esafs(httpx_mock, api):
     url = httpx.URL(
         f"{base_uri}/dm/esaf/stationEsafs/b'TWpWSlJFTT0='/b'TWpVdFNVUXRRdz09'",
         params={"year": "2025"},
     )
     httpx_mock.add_response(url=url, json=[esaf_data])
-    esafs_ = await api.esafs(beamline="25-ID-C", year="2025")
+    esafs_ = await maybe_await(api.esafs(beamline="25-ID-C", year="2025"))
+    # print(esafs_)
+    # assert False
     assert len(esafs_) == 1
     (this_esaf,) = esafs_
     assert this_esaf.title == esaf_data["esafTitle"]
@@ -138,22 +148,24 @@ async def test_get_esafs(httpx_mock, api):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("api", ["sync", "async"], indirect=True)
 async def test_get_esaf(httpx_mock, api):
     httpx_mock.add_response(
         url=f"{base_uri}/dm/esaf/stationEsafsById/b'TWpWSlJFTT0='/279007",
         json=esaf_data,
     )
-    esaf = await api.esaf(esaf_id="279007")
+    esaf = await maybe_await(api.esaf(esaf_id="279007"))
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("api", ["sync", "async"], indirect=True)
 async def test_get_proposals(httpx_mock, api):
     url = httpx.URL(
         f"{base_uri}/dm/bss/stationProposals/b'TWpWSlJFTT0='/b'TWpVdFNVUXRRdz09'",
         params={"runName": "2025-1"},
     )
     httpx_mock.add_response(url=url, json=[proposal_data])
-    proposals_ = await api.proposals(cycle="2025-1", beamline="25-ID-C")
+    proposals_ = await maybe_await(api.proposals(cycle="2025-1", beamline="25-ID-C"))
     assert len(proposals_) == 1
     proposal = proposals_[0]
     assert proposal.proposal_id == "0158394"
@@ -164,13 +176,14 @@ async def test_get_proposals(httpx_mock, api):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("api", ["sync", "async"], indirect=True)
 async def test_get_proposal(httpx_mock, api):
     url = httpx.URL(
         f"{base_uri}/dm/bss/stationProposalsById/b'TWpWSlJFTT0='/0158394",
         params={"runName": "2025-1"},
     )
     httpx_mock.add_response(url=url, json=proposal_data)
-    proposal = await api.proposal(proposal_id="0158394", cycle="2025-1")
+    proposal = await maybe_await(api.proposal(proposal_id="0158394", cycle="2025-1"))
     assert proposal.title == proposal_data["title"]
 
 
