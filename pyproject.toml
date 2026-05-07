@@ -6,7 +6,7 @@ authors = [
 ]
 description = "dmax"
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
