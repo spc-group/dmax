@@ -14,10 +14,10 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 keywords = []
-dependencies = []
+dependencies = ["httpx", "stamina", "pydantic"]
 
 [dependency-groups]
-dev = ["black", "pytest", "ruff", "isort", "mypy"]
+dev = ["pytest", "pytest-httpx", "pytest-asyncio", "black", "ruff", "isort", "mypy", ]
 
 [project.urls]
 Homepage = "https://github.com/spc-group/dmax"
