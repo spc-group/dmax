@@ -194,7 +194,7 @@ packages:
 - pypi: ./
   name: dmax
   version: 0.0.0
-  sha256: 2ec33fe24430ec082ba5db36f9d704f0838009e87d22fcb752e83f07293600e3
+  sha256: 73d602c04ea4262b6f692f3f7f772e888f7971c5d5abe3eefb8fcd1d72620fe5
   requires_dist:
   - httpx
   - stamina

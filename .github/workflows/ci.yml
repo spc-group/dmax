@@ -15,6 +15,25 @@ jobs:
   linting:
     runs-on: ubuntu-latest
     timeout-minutes: 1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up UV and Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.14"
+      # You can test your matrix by printing the current Python version
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Display black version
+        run: uv run --dev black --version
+      - name: Enforce formatting standards
+        run: uv run --dev black --check --preview src/ tests/
+      - name: Enforce import sorting
+        run: uv run --dev isort --check src/ tests/
+  static-checking:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    needs: [linting]
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
@@ -29,32 +48,12 @@ jobs:
         run: python -c "import sys; print(sys.version)"
       - name: Ruff linting
         run: uv run --dev ruff check src/ tests/
-      - name: Enforce formatting standards
-        run: uv run --dev black --check --preview src/ tests/
-      - name: Enforce import sorting
-        run: uv run --dev isort --check src/ tests/
-  type-checking:
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
-    needs: linting
-    strategy:
-      matrix:
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up UV and Python ${{ matrix.python-version }}
-        uses: astral-sh/setup-uv@v6
-        with:
-          python-version: ${{ matrix.python-version }}
-      # You can test your matrix by printing the current Python version
-      - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
       - name: Check types
         run: uv run --dev mypy
   tests:
     runs-on: ubuntu-latest
     timeout-minutes: 1
-    needs: [linting, type-checking]
+    needs: [linting, static-checking]
     strategy:
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]

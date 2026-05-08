@@ -89,4 +89,4 @@ cmd = "isort src/ tests/ {{ check_flag }}"
 args = [
      { arg = "check_flag", default = "" },
 ]
-cmd = "black src/ tests/ {{ check_flag }}"
+cmd = "black src/ tests/ {{ check_flag }} --preview"

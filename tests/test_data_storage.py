@@ -10,7 +10,9 @@ from dmax.testing import maybe_await
 experiments = [
     {
         "name": "fong-25idc-2026-C1",
-        "description": "HERFD-XAS Investigation of Strain-Tuned Ni-O Orbital Hybridization in Nickelate Films",
+        "description": (
+            "HERFD-XAS Investigation of Strain-Tuned Ni-O Orbital Hybridization in Nickelate Films"
+        ),
         "id": 26356,
         "primaryStorage": {
             "description": "APS SOJOURNER Storage",
@@ -34,7 +36,9 @@ experiments = [
     },
     {
         "name": "chen_2026-2",
-        "description": "Ultrafast X-ray Absorption Spectroscopy Investigation of Surface Charge Storage Mechanisms in Ni(OH)",
+        "description": (
+            "Ultrafast X-ray Absorption Spectroscopy Investigation of Surface Charge Storage Mechanisms in Ni(OH)"
+        ),
         "id": 27200,
         "primaryStorage": {
             "description": "APS SOJOURNER Storage",
