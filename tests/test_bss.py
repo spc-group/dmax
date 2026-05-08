@@ -2,7 +2,7 @@ import httpx
 import pytest
 import stamina
 
-from dmax import bss
+from dmax import AsyncClient, Client
 from dmax.testing import maybe_await
 
 beamlines = [
@@ -112,12 +112,12 @@ base_uri = "http://localhost:12345"
 def api(request):
     stamina.set_testing(True)
     if getattr(request, "param", "async") == "async":
-        client = bss.BssAsyncClient(
-            username="", password="", station_name="25IDC", uri=base_uri
+        client = AsyncClient(
+            username="", password="", station_name="25IDC", bss_uri=base_uri
         )
     else:
-        client = bss.BssSyncClient(
-            username="", password="", station_name="25IDC", uri=base_uri
+        client = Client(
+            username="", password="", station_name="25IDC", bss_uri=base_uri
         )
     return client
 

@@ -1,3 +1,15 @@
+"""
+REST API Endpoints
+==================
+
+- /dm/esaf/stationEsafs/{station_name*}/{beamline_name*}?year={year}
+- /dm/esaf/stationEsafsById/{station_name*}/{esaf_id}
+- /dm/bss/stationProposals/{station_name*}/{beamline_name*}?runName={run}
+- /dm/bss/stationProposalsById/{station_name*}/{proposal_id}?runName={run}
+
+* double base64 encoded bytestring
+"""
+
 import datetime as dt
 import json
 from base64 import b64encode
@@ -5,10 +17,9 @@ from collections.abc import Generator
 from typing import Any, Mapping
 
 import httpx
-import stamina
 from pydantic import BaseModel
 
-__all__ = ["Esaf", "Proposal", "User", "BssAsyncClient"]
+__all__ = ["Esaf", "Proposal", "User"]
 
 
 class User(BaseModel):
@@ -47,52 +58,6 @@ def encode(string: str) -> bytes:
     return b64encode(b64encode(string.encode()))
 
 
-class DMAuth(httpx.Auth):
-
-    def __init__(self, username: str, password: str, base_uri: str):
-        self.username = username
-        self.password = password
-        self.base_uri = base_uri
-
-    def auth_flow(self, request: httpx.Request):
-        # Try the original request first, maybe we don't need to log in
-        response = yield request
-        if response.status_code == 401:
-            # Make an extra login request to get the session cookie
-            login_url = f"{self.base_uri}/login"
-            response = yield httpx.Request(
-                method="POST",
-                url=login_url,
-                data={"username": self.username, "password": self.password},
-            )
-            # Authentication was successful, try the original request again
-            if response.status_code == 200:
-                request.headers["cookie"] = response.headers["set-cookie"]
-                yield request
-            else:
-                return response
-
-
-def raise_for_status(response: httpx.Response) -> httpx.Response:
-    """Raises an exception if the response did not complete successfully.
-
-    Similar to the behavior of httpx.Response.raise_for_status, but
-    also accounts for situations where the dm API returns a 200 status
-    code, but the response content contains error information.
-
-    """
-    response = response.raise_for_status()
-    content = response.json()
-    if "errorCode" not in content and "errorMessage" not in content:
-        # Everything is fine, just send the response on
-        return response
-    error_code = content.get("errorCode", "??")
-    error_message = content.get("errorMessage", "Unknown error")
-    raise httpx.HTTPStatusError(
-        f"{error_message} ({error_code})", response=response, request=response.request
-    )
-
-
 def _to_proposal(data: Mapping[str, Any]) -> Proposal:
     # Scheduling dates
     # dt_format = "%Y-%m-%d %H:%M:%S"
@@ -124,9 +89,9 @@ def _to_proposal(data: Mapping[str, Any]) -> Proposal:
     )
 
 
-def _request_proposals(beamline: str, cycle: str | None, station_name: bytes, context):
+def request_proposals(beamline: str, cycle: str | None, station_name: str, context):
     """Load the proposals for a given *beamline* during a given *cycle*."""
-    url = f"bss/stationProposals/{station_name!r}/{encode(beamline)!r}"
+    url = f"bss/stationProposals/{encode(station_name)!r}/{encode(beamline)!r}"
     params = {"runName": cycle} if cycle else None
     json_data = yield context.get(url, params=params)
     # response = yield context.get(url, params=params)
@@ -134,11 +99,9 @@ def _request_proposals(beamline: str, cycle: str | None, station_name: bytes, co
     return [_to_proposal(datum) for datum in data]
 
 
-def _request_proposal(
-    proposal_id: str, cycle: str | None, station_name: bytes, context
-):
+def request_proposal(proposal_id: str, cycle: str | None, station_name: str, context):
     """Load the given proposal on a given *beamline* during a given *cycle*."""
-    url = f"bss/stationProposalsById/{station_name!r}/{proposal_id}"
+    url = f"bss/stationProposalsById/{encode(station_name)!r}/{proposal_id}"
     params = {"runName": cycle} if cycle else None
     json_data = yield context.get(url, params=params)
     data = json.loads(json_data)
@@ -175,239 +138,24 @@ def _to_esaf(data: Mapping[str, Any]) -> Esaf:
     )
 
 
-def _request_esaf(
-    esaf_id: str, station_name: bytes, context
+def request_esaf(
+    esaf_id: str, station_name: str, context
 ) -> Generator[httpx.Request, str, Esaf]:
-    url = f"esaf/stationEsafsById/{station_name!r}/{esaf_id}"
+    url = f"esaf/stationEsafsById/{encode(station_name)!r}/{esaf_id}"
     json_data = yield context.get(url)
     return _to_esaf(json.loads(json_data))
 
 
-def _request_esafs(
-    beamline: str, year: str | None, station_name: bytes, context
+def request_esafs(
+    beamline: str, year: str | None, station_name: str, context
 ) -> Generator[httpx.Request, str, list[Esaf]]:
     """Load the ESAF's for the given *beamline* and *year*."""
-    url = f"esaf/stationEsafs/{station_name!r}/{encode(beamline)!r}"
+    url = f"esaf/stationEsafs/{encode(station_name)!r}/{encode(beamline)!r}"
     params = {"year": year} if year else None
     json_data = yield context.get(url, params=params)
     data = json.loads(json_data)
     esafs_ = [_to_esaf(datum) for datum in data]
     return esafs_
-
-
-class SyncContext:
-    _client: httpx.Client
-    ClientClass = httpx.Client
-
-    def __init__(self, auth, base_uri):
-        self.auth = auth
-        self.base_uri = base_uri
-
-    @property
-    def client(self) -> httpx.AsyncClient | httpx.Client:
-        if not hasattr(self, "_client"):
-            # API certificates are not signed by a trusted local issuer
-            # If that changes, set `verify=True`
-            self._client = self.ClientClass(
-                base_url=self.base_uri, auth=self.auth, verify=False
-            )
-        return self._client
-
-    def serve_requests(self, requests):
-        # Do the requests one at a time
-        response = None
-        return_value = None
-        while True:
-            try:
-                request = requests.send(response)
-            except StopIteration as exc:
-                return_value = exc.value
-                break
-            response = self.client.send(request)
-            response = raise_for_status(response).text
-        return return_value
-
-    def get(self, url: str, *args, **kwargs):
-        url = url.removesuffix("/b''")
-        return self.client.build_request("GET", url, *args, **kwargs)
-
-
-class AsyncContext(SyncContext):
-    ClientClass = httpx.AsyncClient
-
-    async def serve_requests(self, requests):
-        # Do the requests one at a time
-        response = None
-        return_value = None
-        while True:
-            try:
-                request = requests.send(response)
-            except StopIteration as exc:
-                return_value = exc.value
-                break
-            response = await self.client.send(request)
-            response = raise_for_status(response).text
-        return return_value
-
-
-class BssSyncClient:
-    """Client for the APS data management REST API.
-
-    REST API Endpoints
-    ==================
-
-    - /dm/esaf/stationEsafs/{station_name*}/{beamline_name*}?year={year}
-    - /dm/esaf/stationEsafsById/{station_name*}/{esaf_id}
-    - /dm/bss/stationProposals/{station_name*}/{beamline_name*}?runName={run}
-    - /dm/bss/stationProposalsById/{station_name*}/{proposal_id}?runName={run}
-
-    * double base64 encoded bytestring
-    """
-
-    ContextClass = SyncContext
-    base_uri: str
-    auth: httpx.Auth
-
-    def __init__(self, username: str, password: str, station_name: str, uri: str):
-        """*username*, *password*, and *station_name* are all assigned by the
-        data management group.
-
-        """
-        # Standardize the host URI
-        uri = uri.rstrip("/")
-        if uri.split("/")[-1] != "dm":
-            # Add the 'dm' prefix for paths
-            uri = f"{uri}/dm"
-        self.base_uri = uri
-        self.auth = DMAuth(username=username, password=password, base_uri=self.base_uri)
-        self.station_name = encode(station_name)
-        self.context = self.ContextClass(self.auth, uri)
-
-    def esafs(self, beamline: str = "", year: str | None = None) -> list[Esaf]:
-        """Load the ESAF's for the given *beamline* and *year*."""
-        requests = _request_esafs(
-            beamline=beamline,
-            year=year,
-            station_name=self.station_name,
-            context=self.context,
-        )
-        return self.context.serve_requests(requests)
-
-    def esaf(self, esaf_id: str) -> Esaf:
-        """Load the ESAF's for the given *sector* and *year*."""
-        requests = _request_esaf(esaf_id, self.station_name, self.context)
-        return self.context.serve_requests(requests)
-
-    def proposals(self, beamline: str = "", cycle: str | None = None) -> list[Proposal]:
-        """Load the proposals for a given *beamline* during a given *cycle*."""
-        requests = _request_proposals(
-            beamline=beamline,
-            cycle=cycle,
-            station_name=self.station_name,
-            context=self.context,
-        )
-        return self.context.serve_requests(requests)
-
-    def proposal(self, proposal_id: str, cycle: str | None = None) -> Proposal:
-        """Load the given proposal on a given *beamline* during a given *cycle*."""
-        requests = _request_proposal(
-            proposal_id=proposal_id,
-            cycle=cycle,
-            station_name=self.station_name,
-            context=self.context,
-        )
-        return self.context.serve_requests(requests)
-
-
-class BssAsyncClient:
-    """Client for the APS data management REST API.
-
-    REST API Endpoints
-    ==================
-
-    - /dm/esaf/stationEsafs/{station_name*}/{beamline_name*}?year={year}
-    - /dm/esaf/stationEsafsById/{station_name*}/{esaf_id}
-    - /dm/bss/stationProposals/{station_name*}/{beamline_name*}?runName={run}
-    - /dm/bss/stationProposalsById/{station_name*}/{proposal_id}?runName={run}
-
-    * double base64 encoded bytestring
-    """
-
-    ContextClass = AsyncContext
-    _client: httpx.AsyncClient
-    base_uri: str
-    auth: httpx.Auth
-
-    def __init__(self, username: str, password: str, station_name: str, uri: str):
-        """*username*, *password*, and *station_name* are all assigned by the
-        data management group.
-
-        """
-        # Standardize the host URI
-        uri = uri.rstrip("/")
-        if uri.split("/")[-1] != "dm":
-            # Add the 'dm' prefix for paths
-            uri = f"{uri}/dm"
-        self.base_uri = uri
-        self.auth = DMAuth(username=username, password=password, base_uri=self.base_uri)
-        self.station_name = encode(station_name)
-        self.context = self.ContextClass(self.auth, uri)
-
-    @property
-    def client(self) -> httpx.AsyncClient:
-        if not hasattr(self, "_client"):
-            # API certificates are not signed by a trusted local issuer
-            # If that changes, set `verify=True`
-            self._client = httpx.AsyncClient(
-                base_url=self.base_uri, auth=self.auth, verify=False
-            )
-        return self._client
-
-    @stamina.retry(on=httpx.HTTPError, attempts=3)
-    async def _http_get(
-        self, url: str, params: Mapping | None = None
-    ) -> httpx.Response:
-        # Clean up the URL in case there are missing parameters
-        url = url.removesuffix("/b''")
-        response = await self.client.get(url, params=params)
-        return raise_for_status(response)
-
-    async def esafs(self, beamline: str = "", year: str | None = None) -> list[Esaf]:
-        """Load the ESAF's for the given *beamline* and *year*."""
-        requests = _request_esafs(
-            beamline=beamline,
-            year=year,
-            station_name=self.station_name,
-            context=self.context,
-        )
-        return await self.context.serve_requests(requests)
-
-    async def esaf(self, esaf_id: str) -> Esaf:
-        """Load the ESAF's for the given *sector* and *year*."""
-        requests = _request_esaf(esaf_id, self.station_name, self.context)
-        return await self.context.serve_requests(requests)
-
-    async def proposals(
-        self, beamline: str = "", cycle: str | None = None
-    ) -> list[Proposal]:
-        """Load the proposals for a given *beamline* during a given *cycle*."""
-        requests = _request_proposals(
-            beamline=beamline,
-            cycle=cycle,
-            station_name=self.station_name,
-            context=self.context,
-        )
-        return await self.context.serve_requests(requests)
-
-    async def proposal(self, proposal_id: str, cycle: str | None = None):
-        """Load the given proposal on a given *beamline* during a given *cycle*."""
-        requests = _request_proposal(
-            proposal_id=proposal_id,
-            cycle=cycle,
-            station_name=self.station_name,
-            context=self.context,
-        )
-        return await self.context.serve_requests(requests)
 
 
 # -----------------------------------------------------------------------------
