@@ -1,6 +1,7 @@
 import httpx
 
 from . import bss
+from . import data_storage as ds
 from .auth import DMAuth
 from .context import AsyncContext, SyncContext
 
@@ -28,7 +29,14 @@ def raise_for_status(response: httpx.Response) -> httpx.Response:
 class AsyncClient:
     """Client for the APS data management REST API."""
 
-    def __init__(self, username: str, password: str, station_name: str, bss_uri: str):
+    def __init__(
+        self,
+        username: str,
+        password: str,
+        station_name: str,
+        bss_uri: str = "http://localhost:11337/dm",
+        data_storage_uri: str = "http://localhost:22237/dm",
+    ):
         """*username*, *password*, and *station_name* are all assigned by the
         data management group.
 
@@ -36,6 +44,8 @@ class AsyncClient:
         self.station_name = station_name
         auth = DMAuth(username=username, password=password, base_uri=bss_uri)
         self._bss_context = AsyncContext(base_uri=bss_uri, auth=auth)
+        auth = DMAuth(username=username, password=password, base_uri=data_storage_uri)
+        self._ds_context = AsyncContext(base_uri=data_storage_uri, auth=auth)
 
     async def serve_requests(self, requests):
         # Do the requests one at a time
@@ -92,6 +102,13 @@ class AsyncClient:
         )
         return await self.serve_requests(requests)
 
+    async def experiments(self):
+        requests = ds.request_experiments(
+            station_name=self.station_name,
+            context=self._ds_context,
+        )
+        return await self.serve_requests(requests)
+
 
 class SyncClient:
     """Client for the APS data management REST API.
@@ -111,7 +128,14 @@ class SyncClient:
     auth: httpx.Auth
     ContextClass: SyncContext
 
-    def __init__(self, username: str, password: str, station_name: str, bss_uri: str):
+    def __init__(
+        self,
+        username: str,
+        password: str,
+        station_name: str,
+        bss_uri: str = "http://localhost:11337/dm",
+        data_storage_uri: str = "http://localhost:22237/dm",
+    ):
         """*username*, *password*, and *station_name* are all assigned by the
         data management group.
 
@@ -119,6 +143,8 @@ class SyncClient:
         self.station_name = station_name
         auth = DMAuth(username=username, password=password, base_uri=bss_uri)
         self._bss_context = SyncContext(base_uri=bss_uri, auth=auth)
+        auth = DMAuth(username=username, password=password, base_uri=data_storage_uri)
+        self._ds_context = SyncContext(base_uri=data_storage_uri, auth=auth)
 
     def serve_requests(self, requests):
         # Do the requests one at a time
@@ -170,3 +196,36 @@ class SyncClient:
             context=self._bss_context,
         )
         return self.serve_requests(requests)
+
+    def experiments(self):
+        requests = ds.request_experiments(
+            station_name=self.station_name,
+            context=self._ds_context,
+        )
+        return self.serve_requests(requests)
+
+
+# -----------------------------------------------------------------------------
+# :author:    Mark Wolfman
+# :email:     wolfman@anl.gov
+# :copyright: Copyright © 2026, UChicago Argonne, LLC
+#
+# Distributed under the terms of the 3-Clause BSD License
+#
+# The full license is in the file LICENSE, distributed with this software.
+#
+# DISCLAIMER
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# -----------------------------------------------------------------------------
