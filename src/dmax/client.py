@@ -1,8 +1,7 @@
 import httpx
 
-from . import bss
 from . import data_storage as ds
-from . import processing
+from . import processing, scheduling
 from .auth import DMAuth
 from .context import AsyncContext, SyncContext
 
@@ -35,7 +34,7 @@ class AsyncClient:
         username: str,
         password: str,
         station_name: str,
-        bss_uri: str = "http://localhost:11337/dm",
+        scheduling_uri: str = "http://localhost:11337/dm",
         data_storage_uri: str = "http://localhost:22237/dm",
         processing_uri: str = "http://localhost:55536/dm",
     ):
@@ -46,8 +45,8 @@ class AsyncClient:
         self.username = username
         self.password = password
         self.station_name = station_name
-        auth = DMAuth(username=username, password=password, base_uri=bss_uri)
-        self._bss_context = AsyncContext(base_uri=bss_uri, auth=auth)
+        auth = DMAuth(username=username, password=password, base_uri=scheduling_uri)
+        self._bss_context = AsyncContext(base_uri=scheduling_uri, auth=auth)
         auth = DMAuth(username=username, password=password, base_uri=data_storage_uri)
         self._ds_context = AsyncContext(base_uri=data_storage_uri, auth=auth)
         auth = DMAuth(username=username, password=password, base_uri=processing_uri)
@@ -69,9 +68,9 @@ class AsyncClient:
 
     async def esafs(
         self, beamline: str = "", year: str | None = None
-    ) -> list[bss.Esaf]:
+    ) -> list[scheduling.Esaf]:
         """Load the ESAF's for the given *beamline* and *year*."""
-        requests = bss.request_esafs(
+        requests = scheduling.request_esafs(
             beamline=beamline,
             year=year,
             station_name=self.station_name,
@@ -79,16 +78,18 @@ class AsyncClient:
         )
         return await self.serve_requests(requests)
 
-    async def esaf(self, esaf_id: str) -> bss.Esaf:
+    async def esaf(self, esaf_id: str) -> scheduling.Esaf:
         """Load the ESAF's for the given *sector* and *year*."""
-        requests = bss.request_esaf(esaf_id, self.station_name, self._bss_context)
+        requests = scheduling.request_esaf(
+            esaf_id, self.station_name, self._bss_context
+        )
         return await self.serve_requests(requests)
 
     async def proposals(
         self, beamline: str = "", cycle: str | None = None
-    ) -> list[bss.Proposal]:
+    ) -> list[scheduling.Proposal]:
         """Load the proposals for a given *beamline* during a given *cycle*."""
-        requests = bss.request_proposals(
+        requests = scheduling.request_proposals(
             beamline=beamline,
             cycle=cycle,
             station_name=self.station_name,
@@ -98,9 +99,9 @@ class AsyncClient:
 
     async def proposal(
         self, proposal_id: str, cycle: str | None = None
-    ) -> bss.Proposal:
+    ) -> scheduling.Proposal:
         """Load the given proposal on a given *beamline* during a given *cycle*."""
-        requests = bss.request_proposal(
+        requests = scheduling.request_proposal(
             proposal_id=proposal_id,
             cycle=cycle,
             station_name=self.station_name,
@@ -172,8 +173,8 @@ class SyncClient:
 
     - /dm/esaf/stationEsafs/{station_name*}/{beamline_name*}?year={year}
     - /dm/esaf/stationEsafsById/{station_name*}/{esaf_id}
-    - /dm/bss/stationProposals/{station_name*}/{beamline_name*}?runName={run}
-    - /dm/bss/stationProposalsById/{station_name*}/{proposal_id}?runName={run}
+    - /dm/scheduling/stationProposals/{station_name*}/{beamline_name*}?runName={run}
+    - /dm/scheduling/stationProposalsById/{station_name*}/{proposal_id}?runName={run}
 
     * double base64 encoded bytestring
     """
@@ -187,7 +188,7 @@ class SyncClient:
         username: str,
         password: str,
         station_name: str,
-        bss_uri: str = "http://localhost:11337/dm",
+        scheduling_uri: str = "http://localhost:11337/dm",
         data_storage_uri: str = "http://localhost:22237/dm",
         processing_uri: str = "http://localhost:55536/dm",
     ):
@@ -198,8 +199,8 @@ class SyncClient:
         self.username = username
         self.password = password
         self.station_name = station_name
-        auth = DMAuth(username=username, password=password, base_uri=bss_uri)
-        self._bss_context = SyncContext(base_uri=bss_uri, auth=auth)
+        auth = DMAuth(username=username, password=password, base_uri=scheduling_uri)
+        self._bss_context = SyncContext(base_uri=scheduling_uri, auth=auth)
         auth = DMAuth(username=username, password=password, base_uri=data_storage_uri)
         self._ds_context = SyncContext(base_uri=data_storage_uri, auth=auth)
         auth = DMAuth(username=username, password=password, base_uri=processing_uri)
@@ -219,9 +220,11 @@ class SyncClient:
             response = raise_for_status(response).text
         return return_value
 
-    def esafs(self, beamline: str = "", year: str | None = None) -> list[bss.Esaf]:
+    def esafs(
+        self, beamline: str = "", year: str | None = None
+    ) -> list[scheduling.Esaf]:
         """Load the ESAF's for the given *beamline* and *year*."""
-        requests = bss.request_esafs(
+        requests = scheduling.request_esafs(
             beamline=beamline,
             year=year,
             station_name=self.station_name,
@@ -229,16 +232,18 @@ class SyncClient:
         )
         return self.serve_requests(requests)
 
-    def esaf(self, esaf_id: str) -> bss.Esaf:
+    def esaf(self, esaf_id: str) -> scheduling.Esaf:
         """Load the ESAF's for the given *sector* and *year*."""
-        requests = bss.request_esaf(esaf_id, self.station_name, self._bss_context)
+        requests = scheduling.request_esaf(
+            esaf_id, self.station_name, self._bss_context
+        )
         return self.serve_requests(requests)
 
     def proposals(
         self, beamline: str = "", cycle: str | None = None
-    ) -> list[bss.Proposal]:
+    ) -> list[scheduling.Proposal]:
         """Load the proposals for a given *beamline* during a given *cycle*."""
-        requests = bss.request_proposals(
+        requests = scheduling.request_proposals(
             beamline=beamline,
             cycle=cycle,
             station_name=self.station_name,
@@ -246,9 +251,11 @@ class SyncClient:
         )
         return self.serve_requests(requests)
 
-    def proposal(self, proposal_id: str, cycle: str | None = None) -> bss.Proposal:
+    def proposal(
+        self, proposal_id: str, cycle: str | None = None
+    ) -> scheduling.Proposal:
         """Load the given proposal on a given *beamline* during a given *cycle*."""
-        requests = bss.request_proposal(
+        requests = scheduling.request_proposal(
             proposal_id=proposal_id,
             cycle=cycle,
             station_name=self.station_name,

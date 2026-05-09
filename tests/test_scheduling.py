@@ -113,11 +113,11 @@ def api(request):
     stamina.set_testing(True)
     if getattr(request, "param", "async") == "async":
         client = AsyncClient(
-            username="", password="", station_name="25IDC", bss_uri=base_uri
+            username="", password="", station_name="25IDC", scheduling_uri=base_uri
         )
     else:
         client = Client(
-            username="", password="", station_name="25IDC", bss_uri=base_uri
+            username="", password="", station_name="25IDC", scheduling_uri=base_uri
         )
     return client
 
