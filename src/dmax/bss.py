@@ -12,12 +12,13 @@ REST API Endpoints
 
 import datetime as dt
 import json
-from base64 import b64encode
 from collections.abc import Generator
 from typing import Any, Mapping
 
 import httpx
 from pydantic import BaseModel
+
+from .context import encode
 
 __all__ = ["Esaf", "Proposal", "User"]
 
@@ -51,11 +52,6 @@ class Proposal(BaseModel):
     duration: dt.timedelta
     mail_in: bool
     proprietary: bool
-
-
-def encode(string: str) -> bytes:
-    """Double-base64 encoded version of the input *string*."""
-    return b64encode(b64encode(string.encode()))
 
 
 def _to_proposal(data: Mapping[str, Any]) -> Proposal:

@@ -1,12 +1,25 @@
+from base64 import b64encode
+from collections.abc import Generator
 from dataclasses import dataclass
+from typing import TypeAlias, TypeVar
 
 import httpx
+
+
+def encode(string: str) -> bytes:
+    """Double-base64 encoded version of the input *string*."""
+    return b64encode(b64encode(string.encode()))
 
 
 @dataclass
 class Request:
     http_client: httpx.AsyncClient | httpx.Client
     http_request: httpx.Request
+
+
+T = TypeVar("T")
+
+RequestGenerator: TypeAlias[T] = Generator[Request, httpx.Response, T]
 
 
 def standardize_uri(uri):
@@ -40,11 +53,14 @@ class SyncContext:
     def get(self, url: str, *args, **kwargs):
         return self.build_request("GET", url, *args, **kwargs)
 
+    def post(self, url: str, *args, **kwargs):
+        return self.build_request("POST", url, *args, **kwargs)
+
     def build_request(self, method: str, url: str, *args, **kwargs):
         url = url.removesuffix("/b''")
         request = Request(
             http_client=self.client,
-            http_request=self.client.build_request("GET", url, *args, **kwargs),
+            http_request=self.client.build_request(method, url, *args, **kwargs),
         )
         return request
 
