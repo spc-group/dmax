@@ -1,8 +1,9 @@
+import os
+
 import httpx
 
 from . import data_storage as ds
 from . import processing, scheduling
-from .auth import DMAuth
 from .context import AsyncContext, SyncContext
 
 
@@ -26,31 +27,104 @@ def raise_for_status(response: httpx.Response) -> httpx.Response:
     )
 
 
-class AsyncClient:
-    """Client for the APS data management REST API."""
+def standardize_uri(uri):
+    """Remove trailing characters, etc so we all agree on URI structure."""
+    uri = uri.rstrip("/")
+    if uri.split("/")[-1] != "dm":
+        # Add the 'dm' prefix for paths
+        uri = f"{uri}/dm"
+    return uri
+
+
+def uri_or_default(uri: str, env_variable: str, default: str):
+    """Return a DM URI, either explicitly, from environmental variables,
+    or a default.
+
+    Parameters
+    ==========
+    uri
+      The user-provided URI. Could be an empty string.
+    env_variable
+      The name of the environmental variable to check if an explicit
+      URI is not given.
+    default
+      A fallback URI to use if neither *uri* is given nor
+      *env_variable* is set.
+
+    """
+    new_uri = uri or os.environ.get(env_variable, default)
+    return standardize_uri(new_uri)
+
+
+class Client:
+    username: str
+    password: str
+    station_name: str
+    Context: type
 
     def __init__(
         self,
-        username: str,
-        password: str,
-        station_name: str,
-        scheduling_uri: str = "http://localhost:11337/dm",
-        data_storage_uri: str = "http://localhost:22237/dm",
-        processing_uri: str = "http://localhost:55536/dm",
+        *,
+        username: str = "",
+        password: str = "",
+        station_name: str = "",
+        scheduling_uri: str = "",
+        data_storage_uri: str = "",
+        processing_uri: str = "",
     ):
         """*username*, *password*, and *station_name* are all assigned by the
         data management group.
 
         """
-        self.username = username
-        self.password = password
-        self.station_name = station_name
-        auth = DMAuth(username=username, password=password, base_uri=scheduling_uri)
-        self._bss_context = AsyncContext(base_uri=scheduling_uri, auth=auth)
-        auth = DMAuth(username=username, password=password, base_uri=data_storage_uri)
-        self._ds_context = AsyncContext(base_uri=data_storage_uri, auth=auth)
-        auth = DMAuth(username=username, password=password, base_uri=processing_uri)
-        self._proc_context = AsyncContext(base_uri=processing_uri, auth=auth)
+        self.station_name = station_name or os.environ.get("DM_STATION_NAME", "")
+        # Login credentials might be stored in a file on disk
+        login_file = os.environ.get("DM_LOGIN_FILE", "")
+        if login_file:
+            with open(login_file, mode="r") as login_fd:
+                username_, password_ = login_fd.read().strip().split(":")
+            self.username = username or username_
+            self.password = password or password_
+        else:
+            self.username = username
+            self.password = password
+        # There are multiple API's we need, so use multiple contexts
+        vm_host = (
+            f"https://s{self.station_name.lower()}dm.xray.aps.anl.gov"
+            if self.station_name != ""
+            else "http://localhost"
+        )
+        uri = uri_or_default(
+            uri=scheduling_uri,
+            env_variable="DM_APS_DB_WEB_SERVICE_URL",
+            default="https://xraydtn03.xray.aps.anl.gov:11337",
+        )
+        self._bss_context = self.Context(
+            base_uri=uri, username=self.username, password=self.password
+        )
+
+        uri = uri_or_default(
+            uri=data_storage_uri,
+            env_variable="DM_DS_WEB_SERVICE_URL",
+            default=f"{vm_host}:22237",
+        )
+        self._ds_context = self.Context(
+            base_uri=uri, username=self.username, password=self.password
+        )
+
+        uri = uri_or_default(
+            uri=processing_uri,
+            env_variable="DM_PROC_WEB_SERVICE_URL",
+            default="{vm_host}:55536",
+        )
+        self._proc_context = self.Context(
+            base_uri=uri, username=self.username, password=self.password
+        )
+
+
+class AsyncClient(Client):
+    """Client for the APS data management REST API."""
+
+    Context = AsyncContext
 
     async def serve_requests(self, requests):
         # Do the requests one at a time
@@ -175,7 +249,7 @@ class AsyncClient:
         return await self.serve_requests(requests)
 
 
-class SyncClient:
+class SyncClient(Client):
     """Client for the APS data management REST API.
 
     REST API Endpoints
@@ -189,32 +263,7 @@ class SyncClient:
     * double base64 encoded bytestring
     """
 
-    base_uri: str
-    auth: httpx.Auth
-    ContextClass: SyncContext
-
-    def __init__(
-        self,
-        username: str,
-        password: str,
-        station_name: str,
-        scheduling_uri: str = "http://localhost:11337/dm",
-        data_storage_uri: str = "http://localhost:22237/dm",
-        processing_uri: str = "http://localhost:55536/dm",
-    ):
-        """*username*, *password*, and *station_name* are all assigned by the
-        data management group.
-
-        """
-        self.username = username
-        self.password = password
-        self.station_name = station_name
-        auth = DMAuth(username=username, password=password, base_uri=scheduling_uri)
-        self._bss_context = SyncContext(base_uri=scheduling_uri, auth=auth)
-        auth = DMAuth(username=username, password=password, base_uri=data_storage_uri)
-        self._ds_context = SyncContext(base_uri=data_storage_uri, auth=auth)
-        auth = DMAuth(username=username, password=password, base_uri=processing_uri)
-        self._proc_context = SyncContext(base_uri=processing_uri, auth=auth)
+    Context = SyncContext
 
     def serve_requests(self, requests):
         # Do the requests one at a time

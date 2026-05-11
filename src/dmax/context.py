@@ -5,6 +5,8 @@ from typing import TypeAlias, TypeVar
 
 import httpx
 
+from .auth import DMAuth
+
 
 def encode(string: str) -> bytes:
     """Double-base64 encoded version of the input *string*."""
@@ -22,23 +24,14 @@ T = TypeVar("T")
 RequestGenerator: TypeAlias = Generator[Request, httpx.Response, T]
 
 
-def standardize_uri(uri):
-    """Remove trailing characters, etc so we all agree on URI structure."""
-    uri = uri.rstrip("/")
-    if uri.split("/")[-1] != "dm":
-        # Add the 'dm' prefix for paths
-        uri = f"{uri}/dm"
-    return uri
-
-
 class SyncContext:
     _client: httpx.Client
     ClientClass = httpx.Client
 
-    def __init__(self, auth, base_uri: str):
+    def __init__(self, username: str, password: str, base_uri: str):
         # Standardize the host URI
-        self.auth = auth
-        self.base_uri = standardize_uri(base_uri)
+        self.base_uri = base_uri
+        self.auth = DMAuth(username=username, password=password, base_uri=self.base_uri)
 
     @property
     def client(self) -> httpx.AsyncClient | httpx.Client:
