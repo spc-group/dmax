@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from pydantic import BaseModel, Field
+from pydantic.experimental.missing_sentinel import MISSING
 
 from .context import RequestGenerator, encode
 
@@ -31,9 +32,9 @@ class Job(BaseModel):
     error_message: str = Field(alias="errorMessage", default="")
     id: str
     owner: str
-    duration: float = Field(alias="runTime")
+    duration: float = Field(alias="runTime", default=MISSING)
     start: dt.datetime = Field(alias="endTime")
-    end: dt.datetime = Field(alias="endTime")
+    end: dt.datetime = Field(alias="endTime", default=MISSING)
     status: str
     submitted: dt.datetime = Field(alias="submissionTime")
     workflow: Workflow

@@ -71,9 +71,11 @@ def request_experiments(station_name: str, context):
 def request_experiment(id: str, name: str, station_name: str, context):
     """Retrieve a single experiment, either by id or name."""
     if id != "":
-        url = f"/experimentsByStation/{station_name}"
-    else:
+        url = f"/experimentsById/{id}"
+    elif name != "":
         url = f"/experimentsByName/{encode(name)!r}/{station_name}"
+    else:
+        raise TypeError("Either *name* or *id* is required.")
     json_data = yield context.get(url)
     # response = yield context.get(url, params=params)
     data = json.loads(json_data)

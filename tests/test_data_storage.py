@@ -216,6 +216,28 @@ async def test_get_experiment_by_name(httpx_mock, api):
     assert exp.station.description == "Station for 25-ID-C"
 
 
+@pytest.mark.asyncio
+@pytest.mark.parametrize("api", ["sync", "async"], indirect=True)
+async def test_get_experiment_by_id(httpx_mock, api):
+    # sm.host='https://xraydtn03.xray.aps.anl.gov:22237'
+    # url='/dm/experimentsById/26356'
+    url = httpx.URL(
+        f"{base_uri}/dm/experimentsById/26356",
+    )
+    httpx_mock.add_response(url=url, json=full_experiment)
+    exp = await maybe_await(api.experiment(id="26356"))
+    assert exp.name == "fong-25idc-2026-C1"
+    assert (
+        exp.description
+        == "HERFD-XAS Investigation of Strain-Tuned Ni-O Orbital Hybridization in Nickelate Films"
+    )
+    assert exp.id == 26356
+    assert exp.created == dt.datetime(
+        2026, 2, 26, 13, 26, 39, 763553, tzinfo=dt.timezone(dt.timedelta(hours=-6))
+    )
+    assert exp.station.description == "Station for 25-ID-C"
+
+
 # -----------------------------------------------------------------------------
 # :author:    Mark Wolfman
 # :email:     wolfman@anl.gov
