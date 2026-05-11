@@ -102,7 +102,7 @@ def test_env_login(monkeypatch, tmp_path):
     """
     login_path = tmp_path / "login"
     with open(login_path, mode="w") as fd:
-        fd.write("dummy_user:secret")
+        fd.write("dummy_user|secret")
     monkeypatch.setenv("DM_LOGIN_FILE", str(login_path), prepend=False)
     client = Client()
     assert client.username == "dummy_user"

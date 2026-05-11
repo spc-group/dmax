@@ -81,7 +81,7 @@ class Client:
         login_file = os.environ.get("DM_LOGIN_FILE", "")
         if login_file:
             with open(login_file, mode="r") as login_fd:
-                username_, password_ = login_fd.read().strip().split(":")
+                username_, password_ = login_fd.readline().strip().split("|")
             self.username = username or username_
             self.password = password or password_
         else:

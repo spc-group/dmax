@@ -536,8 +536,8 @@ packages:
   requires_python: '>=3.10'
 - pypi: ./
   name: dmax
-  version: 0.0.1
-  sha256: 28e7dd9bf0ad67dddebed13ad249da3dec8caf301bb631bd1919bcc8b09fc470
+  version: 0.0.2
+  sha256: 3a97edef5afc5ec8ece50a0d8486fb4a6bdc5b8783a42d1ca4861310a48a10ad
   requires_dist:
   - httpx
   - stamina

@@ -136,7 +136,7 @@ async def test_get_esafs(httpx_mock, api):
     assert len(esafs_) == 1
     (this_esaf,) = esafs_
     assert this_esaf.title == esaf_data["esafTitle"]
-    assert this_esaf.esaf_id == str(esaf_data["esafId"])
+    assert this_esaf.id == str(esaf_data["esafId"])
     assert len(this_esaf.users) == 2
     # Check properties of a signle user
     user = this_esaf.users[0]

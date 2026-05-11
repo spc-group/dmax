@@ -16,7 +16,7 @@ from collections.abc import Generator
 from typing import Any, Mapping
 
 import httpx
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from .context import encode
 
@@ -33,7 +33,7 @@ class User(BaseModel):
 
 
 class Esaf(BaseModel):
-    esaf_id: str
+    id: str = Field(alias="esaf_id")
     description: str
     sector: str
     title: str
