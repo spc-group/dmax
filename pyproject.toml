@@ -1,6 +1,6 @@
 [project]
 name = "dmax"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Mark Wolfman", email="wolfman@anl.gov" },
 ]
@@ -17,7 +17,7 @@ keywords = []
 dependencies = ["httpx", "stamina", "pydantic", "typing_extensions"]
 
 [dependency-groups]
-dev = ["pytest", "pytest-httpx", "pytest-asyncio", "black", "ruff", "isort", "mypy", ]
+dev = ["pytest", "pytest-httpx", "pytest-asyncio", "black", "ruff", "isort", "mypy", "twine"]
 
 [project.urls]
 Homepage = "https://github.com/spc-group/dmax"

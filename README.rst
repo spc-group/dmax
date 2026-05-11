@@ -53,6 +53,7 @@ The client is given the login credentials, along with the station name
 and any API URIs that it needs to connect.
 
 .. code-block:: python
+
     import dmax
     
     client = dmax.Client(
@@ -82,6 +83,7 @@ provided to the client, environmental variables will be used if
 available:
 
 .. code-block:: python
+
     import dmax
     
     client = dmax.Client()
