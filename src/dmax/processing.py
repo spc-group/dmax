@@ -28,12 +28,12 @@ class Workflow(BaseModel):
 
 class Job(BaseModel):
     file_count: int = Field(alias="countFiles")
-    end: dt.datetime = Field(alias="endTime")
     error_message: str = Field(alias="errorMessage", default="")
     id: str
     owner: str
     duration: float = Field(alias="runTime")
     start: dt.datetime = Field(alias="endTime")
+    end: dt.datetime = Field(alias="endTime")
     status: str
     submitted: dt.datetime = Field(alias="submissionTime")
     workflow: Workflow
@@ -67,7 +67,7 @@ def request_jobs(
         "queryDict": str(encode("{}")),
         "skip": offset,
         "limit": limit,
-        "keyList": str(encode('"DEFAULT"')),
+        "keyList": str(encode('"ALL"')),
     }
     json_data = yield context.get(url, params=params)
     data = json.loads(json_data)

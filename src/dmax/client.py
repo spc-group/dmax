@@ -116,6 +116,16 @@ class AsyncClient:
         )
         return await self.serve_requests(requests)
 
+    async def experiment(self, id: str = "", name: str = ""):
+        """Retrieve a single experiment, either by id or name."""
+        requests = ds.request_experiment(
+            id=id,
+            name=name,
+            station_name=self.station_name,
+            context=self._ds_context,
+        )
+        return await self.serve_requests(requests)
+
     async def workflows(self):
         requests = processing.request_workflows(
             owner=self.username,
@@ -265,6 +275,16 @@ class SyncClient:
 
     def experiments(self):
         requests = ds.request_experiments(
+            station_name=self.station_name,
+            context=self._ds_context,
+        )
+        return self.serve_requests(requests)
+
+    def experiment(self, id: str = "", name: str = ""):
+        """Retrieve a single experiment, either by id or name."""
+        requests = ds.request_experiment(
+            id=id,
+            name=name,
             station_name=self.station_name,
             context=self._ds_context,
         )

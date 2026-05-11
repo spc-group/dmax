@@ -7,6 +7,97 @@ import stamina
 from dmax import AsyncClient, Client
 from dmax.testing import maybe_await
 
+# sm.host='https://xraydtn03.xray.aps.anl.gov:22237'
+# url="/dm/experimentsByName/b'Wm05dVp5MHlOV2xrWXkweU1ESTJMVU14Cg=='/25IDC"
+# 'data={}'
+# method='GET'
+# contentType='html'
+full_experiment = {
+    "analysisDirectory": "/gdata/dm/25IDC/fong-25idc-2026-C1/analysis",
+    "analysisDirectoryFrozen": False,
+    "authGroupName": "fong25idc2-25idc-e58804",
+    "beamlineAdminAccount": "s25staff",
+    "beamlineUserAccount": "s25idcuser",
+    "createDate": "2026-02-26 13:26:39.763553-06:00",
+    "dataDirectory": "/gdata/dm/25IDC/fong-25idc-2026-C1/data",
+    "dataDirectoryFrozen": False,
+    "description": (
+        "HERFD-XAS Investigation of Strain-Tuned Ni-O Orbital "
+        "Hybridization in Nickelate Films"
+    ),
+    "endDate": "2026-02-16 00:00:00-06:00",
+    "experimentStation": {
+        "description": "Station for 25-ID-C",
+        "id": 70,
+        "name": "25IDC",
+    },
+    "experimentStationId": 70,
+    "experimentType": {"description": "Type for 25IDC", "id": 89, "name": "25IDC"},
+    "experimentTypeId": 89,
+    "experimentUsernameList": [
+        "d64944",
+        "d299574",
+        "d302308",
+        "d305918",
+        "d85830",
+        "d324646",
+        "d51801",
+        "d82357",
+        "d268176",
+        "d44673",
+    ],
+    "id": 26356,
+    "managedDirectoryStructure": True,
+    "name": "fong-25idc-2026-C1",
+    "primaryStorage": {
+        "description": "APS SOJOURNER Storage",
+        "id": 5,
+        "name": "SOJOURNER",
+    },
+    "primaryStorageId": 5,
+    "startDate": "2026-02-13 00:00:00-06:00",
+    "stationName": "25IDC",
+    "storageDirectory": "/gdata/dm/25IDC/fong-25idc-2026-C1",
+    "storageHost": "xraydtn03.xray.aps.anl.gov",
+    "storageUrl": (
+        "sojourner://xraydtn03.xray.aps.anl.gov/gdata/dm/25IDC/fong-25idc-2026-C1"
+    ),
+    "systemDirectory": "/gdata/dm/25IDC/fong-25idc-2026-C1/system",
+    "updateDate": "2026-02-26 13:26:39.763553-06:00",
+}
+
+
+minimal_experiment = {
+    # 'authGroupName': 'chen20262-25idc-f69435',
+    # 'createDate': '2026-04-24 14:44:05.023298-05:00',
+    # 'description': 'Ultrafast X-ray Absorption Spectroscopy Investigation of Surface Charge Storage Mechanisms in Ni(OH)',
+    # 'endDate': '2026-04-22 00:00:00-05:00',
+    # 'experimentStation': {'description': 'Station for 25-ID-C',
+    #                       'id': 70,
+    #                       'name': '25IDC'},
+    # 'experimentStationId': 70,
+    # 'experimentType': {'description': 'Type for 25IDC', 'id': 89, 'name': '25IDC'},
+    # 'experimentTypeId': 89,
+    # 'experimentUsernameList': ['d337718',
+    #                            'd322704',
+    #                            'd335009',
+    #                            'd66797',
+    #                            'd268176'],
+    # 'id': 27200,
+    # 'name': 'chen_2026-2',
+    # 'primaryStorage': {'description': 'APS SOJOURNER Storage',
+    #                    'id': 5,
+    #                    'name': 'SOJOURNER'},
+    # 'primaryStorageId': 5,
+    # 'rootPath': 'chen_2026-2',
+    # 'startDate': '2026-04-20 00:00:00-05:00',
+    # 'stationName': '25IDC',
+    # 'storageDirectory': '/gdata/dm/25IDC/chen_2026-2/chen_2026-2',
+    # 'storageHost': 'xraydtn03.xray.aps.anl.gov',
+    # 'storageUrl': 'sojourner://xraydtn03.xray.aps.anl.gov/gdata/dm/25IDC/chen_2026-2/chen_2026-2',
+    # 'updateDate': '2026-04-24 14:44:05.023298-05:00'
+}
+
 experiments = [
     {
         "name": "fong-25idc-2026-C1",
@@ -101,6 +192,28 @@ async def test_get_experiments(httpx_mock, api):
         2026, 2, 26, 13, 26, 39, 763553, tzinfo=dt.timezone(dt.timedelta(hours=-6))
     )
     assert exp0.station.description == "Station for 25-ID-C"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("api", ["sync", "async"], indirect=True)
+async def test_get_experiment_by_name(httpx_mock, api):
+    # /dm/experimentsByName/b'Wm05dVp5MHlOV2xrWXkweU1ESTJMVU14Cg=='/25IDC
+    experiment_name = b"Wm05dVp5MHlOV2xrWXkweU1ESTJMVU14"  # b'fong-25idc-2026-C1'
+    url = httpx.URL(
+        f"{base_uri}/dm/experimentsByName/{experiment_name!r}/25IDC",
+    )
+    httpx_mock.add_response(url=url, json=full_experiment)
+    exp = await maybe_await(api.experiment(name="fong-25idc-2026-C1"))
+    assert exp.name == "fong-25idc-2026-C1"
+    assert (
+        exp.description
+        == "HERFD-XAS Investigation of Strain-Tuned Ni-O Orbital Hybridization in Nickelate Films"
+    )
+    assert exp.id == 26356
+    assert exp.created == dt.datetime(
+        2026, 2, 26, 13, 26, 39, 763553, tzinfo=dt.timezone(dt.timedelta(hours=-6))
+    )
+    assert exp.station.description == "Station for 25-ID-C"
 
 
 # -----------------------------------------------------------------------------

@@ -19,7 +19,7 @@ class Request:
 
 T = TypeVar("T")
 
-RequestGenerator: TypeAlias[T] = Generator[Request, httpx.Response, T]
+RequestGenerator: TypeAlias = Generator[Request, httpx.Response, T]
 
 
 def standardize_uri(uri):

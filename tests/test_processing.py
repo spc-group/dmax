@@ -246,7 +246,7 @@ async def test_get_processing_jobs(httpx_mock, api):
             "queryDict": "b'ZTMwPQ=='",  # b'{}'
             "skip": 21,
             "limit": 2000,
-            "keyList": "b'SWtSRlJrRlZURlFp'",  # b'"DEFAULT"'
+            "keyList": "b'SWtGTVRDST0='",  # b'"DEFAULT"'
         },
     )
     httpx_mock.add_response(url=url, json=jobs)
