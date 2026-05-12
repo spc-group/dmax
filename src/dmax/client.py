@@ -221,9 +221,9 @@ class AsyncClient(Client):
 
         """
         requests = processing.request_jobs(
-            owner=self.username,
             limit=limit,
             offset=offset,
+            owner=self.username,
             context=self._proc_context,
         )
         return await self.serve_requests(requests)
@@ -241,9 +241,9 @@ class AsyncClient(Client):
           Variables to pass to the job.
         """
         requests = processing.submit_job(
-            owner=self.username,
             workflow=workflow,
             job_args=kwargs,
+            owner=self.username,
             context=self._proc_context,
         )
         return await self.serve_requests(requests)
