@@ -1,4 +1,6 @@
 import os
+from collections.abc import Mapping
+from typing import Any
 
 import httpx
 
@@ -207,6 +209,40 @@ class AsyncClient(Client):
         )
         return await self.serve_requests(requests)
 
+    async def workflow(self, name: str):
+        """Retrieve specific workflow owned by the current user."""
+        requests = processing.request_workflow(
+            name=name,
+            owner=self.username,
+            context=self._proc_context,
+        )
+        return await self.serve_requests(requests)
+
+    async def add_workflow(self, workflow: processing.Workflow):
+        """Add a workflow to the processing API.
+
+        If a workflow with the same owner/name already exists, this
+        operation will fail.
+
+        """
+        requests = processing.post_workflow(workflow, context=self._proc_context)
+        return await self.serve_requests(requests)
+
+    async def update_workflow(self, name: str, update: Mapping[str, Any]):
+        """Update an existing workflow on the processing API.
+
+        Parameters
+        ==========
+        update
+          A dict-like object with the new data. These keys/values will
+          be changed on the existing workflow entry.
+
+        """
+        requests = processing.patch_workflow(
+            name, update, owner=self.username, context=self._proc_context
+        )
+        return await self.serve_requests(requests)
+
     async def processing_jobs(
         self, limit: int = 5000, offset: int = 0
     ) -> list[processing.Job]:
@@ -340,9 +376,44 @@ class SyncClient(Client):
         return self.serve_requests(requests)
 
     def workflows(self):
+        """Retrieve all workflows for the current user."""
         requests = processing.request_workflows(
             owner=self.username,
             context=self._proc_context,
+        )
+        return self.serve_requests(requests)
+
+    def workflow(self, name: str):
+        """Retrieve specific workflow owned by the current user."""
+        requests = processing.request_workflow(
+            name=name,
+            owner=self.username,
+            context=self._proc_context,
+        )
+        return self.serve_requests(requests)
+
+    def add_workflow(self, workflow: processing.Workflow):
+        """Add a workflow to the processing API.
+
+        If a workflow with the same owner/name already exists, this
+        operation will fail.
+
+        """
+        requests = processing.post_workflow(workflow, context=self._proc_context)
+        return self.serve_requests(requests)
+
+    def update_workflow(self, name: str, update: Mapping[str, Any]):
+        """Update an existing workflow on the processing API.
+
+        Parameters
+        ==========
+        update
+          A dict-like object with the new data. These keys/values will
+          be changed on the existing workflow entry.
+
+        """
+        requests = processing.patch_workflow(
+            name, update, owner=self.username, context=self._proc_context
         )
         return self.serve_requests(requests)
 

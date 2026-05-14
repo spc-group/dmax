@@ -49,6 +49,9 @@ class SyncContext:
     def post(self, url: str, *args, **kwargs):
         return self.build_request("POST", url, *args, **kwargs)
 
+    def put(self, url: str, *args, **kwargs):
+        return self.build_request("PUT", url, *args, **kwargs)
+
     def build_request(self, method: str, url: str, *args, **kwargs):
         url = url.removesuffix("/b''")
         request = Request(

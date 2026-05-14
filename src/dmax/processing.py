@@ -47,6 +47,33 @@ def request_workflows(owner: str, context):
     return [Workflow(**datum) for datum in data]
 
 
+def request_workflow(name: str, owner: str, context):
+    url = f"/workflowsByOwner/{owner}/{encode(name)!r}"
+    json_data = yield context.get(url)
+    return Workflow(**json.loads(json_data))
+
+
+def post_workflow(spec: Workflow, context):
+    url = "/workflows/addWorkflow"
+    params = {"allowCurrentUsername": 0, "workflow": encode(spec.model_dump_json())}
+    json_data = yield context.post(url, params=params)
+    return Workflow(**json.loads(json_data))
+
+
+def put_workflow(name: str, spec: Workflow, context):
+    # url = "/dm/workflows/updateWorkflow?workflow"
+    url = "/workflows/updateWorkflow"
+    params = {"allowCurrentUsername": 0, "workflow": encode(spec.model_dump_json())}
+    json_data = yield context.put(url, params=params)
+    return Workflow(**json.loads(json_data))
+
+
+def patch_workflow(name: str, update: Mapping[str, Any], owner: str, context):
+    old_wf = yield from request_workflow(name=name, owner=owner, context=context)
+    new_wf = old_wf.model_copy(update=update)
+    return (yield from put_workflow(name=new_wf.name, spec=new_wf, context=context))
+
+
 def request_jobs(
     owner: str, limit: int, offset: int, context
 ) -> RequestGenerator[list[Job]]:
