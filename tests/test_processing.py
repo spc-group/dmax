@@ -236,6 +236,24 @@ async def test_add_new_workflow(httpx_mock, api):
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("api", ["sync", "async"], indirect=True)
+async def test_set_workflow(httpx_mock, api):
+    new_workflow = Workflow(**workflows[0])
+    # Mock for retrieving the existing workflow
+    url = httpx.URL(
+        f"{base_uri}/dm/workflows/updateWorkflow",
+        params={
+            "allowCurrentUsername": 0,
+            "workflow": (
+                "b'ZXlKdVlXMWxJam9pWlhoaGJYQnNaUzB3TVNJc0ltOTNibVZ5SWpvaVpIVnRiWGxmZFhObGNpSXNJblZ6WlhKZllXTmpiM1Z1ZENJNkltUjFiVzE1WDNWelpYSWlMQ0prWlhOamNtbHdkR2x2YmlJNklsZHZjbXRtYkc5M0lFVjRZVzF3YkdVZ01ERWlMQ0pwWkNJNklqWTVaakJqTUdJeE5EUXdPV0l4WVRjME1UZzFOR0psTmlJc0luTjBZV2RsY3lJNmV5SXdNUzFUVkVGU1ZDSTZleUpqYjIxdFlXNWtJam9pTDJKcGJpOWtZWFJsSUNzbFdTVnRKV1FsU0NWTkpWTWlMQ0p2ZFhSd2RYUmZkbUZ5YVdGaWJHVmZjbVZuZFd4aGNsOWxlSEJ5WlhOemFXOXVjeUk2V3lJb1AxQThkR2x0WlZOMFlXMXdQaTRxS1NKZGZTd2lNREl0VFV0RVNWSWlPbnNpWTI5dGJXRnVaQ0k2SWk5aWFXNHZiV3RrYVhJZ0xYQWdMM1J0Y0M5M2IzSnJabXh2ZHk0a2RHbHRaVk4wWVcxd0lpd2liM1YwY0hWMFgzWmhjbWxoWW14bFgzSmxaM1ZzWVhKZlpYaHdjbVZ6YzJsdmJuTWlPbHRkZlN3aU1ETXRSVU5JVHlJNmV5SmpiMjF0WVc1a0lqb2lMMkpwYmk5bFkyaHZJRnhjWENKVFZFRlNWQ0JLVDBJZ1NVUTZJQ1JwWkZ4Y1hDSWdQaUF2ZEcxd0wzZHZjbXRtYkc5M0xpUjBhVzFsVTNSaGJYQXZKR2xrTG05MWRDSXNJbTkxZEhCMWRGOTJZWEpwWVdKc1pWOXlaV2QxYkdGeVgyVjRjSEpsYzNOcGIyNXpJanBiWFgwc0lqQTBMVTFFTlZOVlRTSTZleUpqYjIxdFlXNWtJam9pTDJKcGJpOXRaRFZ6ZFcwZ0pHWnBiR1ZRWVhSb0lId2dZM1YwSUMxbU1TQXRaRnhjWENJZ1hGeGNJaUlzSW05MWRIQjFkRjkyWVhKcFlXSnNaVjl5WldkMWJHRnlYMlY0Y0hKbGMzTnBiMjV6SWpwYklpZy9VRHh0WkRWVGRXMCtMaW9wSWwxOUxDSXdOUzFGUTBoUElqcDdJbU52YlcxaGJtUWlPaUpsWTJodklGeGNYQ0pHU1V4RklDUm1hV3hsVUdGMGFDQk5SRFVnVTFWTk9pQWtiV1ExVTNWdFhGeGNJaUErUGlBdmRHMXdMM2R2Y210bWJHOTNMaVIwYVcxbFUzUmhiWEF2Skdsa0xtOTFkQ0lzSW05MWRIQjFkRjkyWVhKcFlXSnNaVjl5WldkMWJHRnlYMlY0Y0hKbGMzTnBiMjV6SWpwYlhYMHNJakEyTFVSUFRrVWlPbnNpWTI5dGJXRnVaQ0k2SWk5aWFXNHZaV05vYnlCY1hGd2lVMVJQVUNCS1QwSWdTVVE2SUNScFpGeGNYQ0lnUGo0Z0wzUnRjQzkzYjNKclpteHZkeTRrZEdsdFpWTjBZVzF3THlScFpDNXZkWFFpTENKdmRYUndkWFJmZG1GeWFXRmliR1ZmY21WbmRXeGhjbDlsZUhCeVpYTnphVzl1Y3lJNlcxMTlmWDA9'"
+            ),
+        },
+    )
+    httpx_mock.add_response(url=url, method="PUT", json=workflows[0])
+    await maybe_await(api.set_workflow(name="example-01", workflow=new_workflow))
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("api", ["sync", "async"], indirect=True)
 async def test_update_workflow(httpx_mock, api):
     # Mock for retrieving the existing workflow
     url = httpx.URL(

@@ -228,6 +228,20 @@ class AsyncClient(Client):
         requests = processing.post_workflow(workflow, context=self._proc_context)
         return await self.serve_requests(requests)
 
+    async def set_workflow(self, name: str, workflow: processing.Workflow):
+        """Update an existing workflow on the processing API.
+
+        Parameters
+        ==========
+        name
+          The name of the workflow to set.
+        workflow
+          The workflow definition to set.
+
+        """
+        requests = processing.put_workflow(name, workflow, context=self._proc_context)
+        return await self.serve_requests(requests)
+
     async def update_workflow(self, name: str, update: Mapping[str, Any]):
         """Update an existing workflow on the processing API.
 
@@ -400,6 +414,20 @@ class SyncClient(Client):
 
         """
         requests = processing.post_workflow(workflow, context=self._proc_context)
+        return self.serve_requests(requests)
+
+    def set_workflow(self, name: str, workflow: processing.Workflow):
+        """Update an existing workflow on the processing API.
+
+        Parameters
+        ==========
+        name
+          The name of the workflow to set.
+        workflow
+          The workflow definition to set.
+
+        """
+        requests = processing.put_workflow(name, workflow, context=self._proc_context)
         return self.serve_requests(requests)
 
     def update_workflow(self, name: str, update: Mapping[str, Any]):
