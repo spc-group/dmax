@@ -154,6 +154,378 @@ jobs = [
 ]
 
 
+failed_job = {
+    # sm.host='https://s25idcdm.xray.aps.anl.gov:55536'
+    # url='/dm/processingJobsByOwner/s25idcuser/7e01fb97-44b1-4b7f-b1ca-d08624eb8c77'
+    # 'data={}'
+    # method='GET'
+    # contentType='html'
+    # response=<http.client.HTTPResponse object at 0x7efce40c6c20>
+    "countFiles": 1,
+    "endTime": 1778850780.4493127,
+    "endTimestamp": "2026/05/15 08:13:00 CDT",
+    "filePath": "/dev/null",
+    "id": "7e01fb97-44b1-4b7f-b1ca-d08624eb8c77",
+    "owner": "s25idcuser",
+    "runTime": 14.460897207260132,
+    "run_uid": "4ddd5c94-0825-4ab8-b1b5-12e8e5d66a48",
+    "stage": "030-EXPORT",
+    "startTime": 1778850765.9884155,
+    "startTimestamp": "2026/05/15 08:12:45 CDT",
+    "status": "failed",
+    "submissionTime": 1778850765.985844,
+    "submissionTimestamp": "2026/05/15 08:12:45 CDT",
+    "target_folder": "/gdata/dm/25IDC/commissioning-2026-C2",
+    "timeStamp": "20260515081246",
+    "workflow": {
+        "description": (
+            "Processing for a Bluesky scan that has no "
+            "significant data processing needs"
+        ),
+        "id": "6a03718401668a9aaf71ba47",
+        "name": "simple",
+        "owner": "s25idcuser",
+        "stages": {
+            "010-START": {
+                "childProcesses": {
+                    "0": {
+                        "childProcessNumber": 0,
+                        "command": (
+                            "/usr/bin/sudo "
+                            "-u "
+                            "s25idcuser "
+                            "-- "
+                            "/bin/date "
+                            "+%Y%m%d%H%M%S"
+                        ),
+                        "endTime": 1778850766.0461721,
+                        "exitStatus": 0,
+                        "runTime": 0.053916215896606445,
+                        "stageId": "010-START",
+                        "startTime": 1778850765.992256,
+                        "status": "done",
+                        "stdErr": "",
+                        "stdOut": "20260515081246\n",
+                        "submitTime": 1778850765.9913614,
+                        "userAccount": "s25idcuser",
+                        "workingDir": None,
+                    }
+                },
+                "command": "/bin/date +%Y%m%d%H%M%S",
+                "nCompletedChildProcesses": 1,
+                "nQueuedChildProcesses": 0,
+                "nRunningChildProcesses": 0,
+                "outputVariableRegexList": ["(?P<timeStamp>.*)"],
+            },
+            "020-FIT_FLUORESCENCE": {
+                "childProcesses": {
+                    "1": {
+                        "childProcessNumber": 1,
+                        "command": (
+                            "/usr/bin/sudo "
+                            "-u "
+                            "s25idcuser "
+                            "-- "
+                            "/APSshare/bin/pixi "
+                            "run "
+                            "--manifest-path "
+                            "~s25idcuser/src/oaty-bar "
+                            "fit-fluorescence "
+                            "4ddd5c94-0825-4ab8-b1b5-12e8e5d66a48 "
+                            "--raw-profile "
+                            "oaty-bar "
+                            "--results-profile "
+                            "oaty-bar-results"
+                        ),
+                        "endTime": 1778850775.6094248,
+                        "exitStatus": 0,
+                        "runTime": 9.560480117797852,
+                        "stageId": "020-FIT_FLUORESCENCE",
+                        "startTime": 1778850766.0489447,
+                        "status": "done",
+                        "stdErr": (
+                            "WARNING "
+                            "[2026-05-15 "
+                            "08:12:54]: "
+                            "Fitting "
+                            "0 "
+                            "chemical "
+                            "elements "
+                            "for "
+                            "run "
+                            "'http://s25idcdm.xray.aps.anl.gov:8020/api/v1/metadata/raw/4ddd5c94-0825-4ab8-b1b5-12e8e5d66a48'\n"
+                            "WARNING "
+                            "[2026-05-15 "
+                            "08:12:54]: "
+                            "Fitting "
+                            "produced "
+                            "no "
+                            "results.\n"
+                        ),
+                        "stdOut": "",
+                        "submitTime": 1778850766.0481126,
+                        "userAccount": "s25idcuser",
+                        "workingDir": None,
+                    }
+                },
+                "command": (
+                    "/APSshare/bin/pixi "
+                    "run "
+                    "--manifest-path "
+                    "~s25idcuser/src/oaty-bar "
+                    "fit-fluorescence "
+                    "$run_uid "
+                    "--raw-profile "
+                    "oaty-bar "
+                    "--results-profile "
+                    "oaty-bar-results"
+                ),
+                "nCompletedChildProcesses": 1,
+                "nQueuedChildProcesses": 0,
+                "nRunningChildProcesses": 0,
+            },
+            "030-EXPORT": {
+                "childProcesses": {
+                    "2": {
+                        "childProcessNumber": 2,
+                        "command": (
+                            "/usr/bin/sudo "
+                            "-u "
+                            "s25idcuser "
+                            "-- "
+                            "/APSshare/bin/pixi "
+                            "run "
+                            "--manifest-path "
+                            "~s25idcuser/src/oaty-bar "
+                            "export-hdf "
+                            "4ddd5c94-0825-4ab8-b1b5-12e8e5d66a48 "
+                            "/gdata/dm/25IDC/commissioning-2026-C2 "
+                            "--raw-profile "
+                            "oaty-bar "
+                            "--results-profile "
+                            "oaty-bar-results"
+                        ),
+                        "endTime": 1778850780.449093,
+                        "exitStatus": 1,
+                        "runTime": 4.834179162979126,
+                        "stageId": "030-EXPORT",
+                        "startTime": 1778850775.614914,
+                        "status": "failed",
+                        "stdErr": (
+                            "Traceback "
+                            "(most "
+                            "recent "
+                            "call "
+                            "last):\n"
+                            "  "
+                            "File "
+                            '"/home/beams0/S25IDCUSER/src/oaty-bar/.pixi/envs/default/bin/export-hdf", '
+                            "line "
+                            "10, "
+                            "in "
+                            "<module>\n"
+                            "    "
+                            "sys.exit(main())\n"
+                            "             "
+                            "~~~~^^\n"
+                            "  "
+                            "File "
+                            '"/home/beams0/S25IDCUSER/src/oaty-bar/src/oaty_bar/_export_hdf.py", '
+                            "line "
+                            "497, "
+                            "in "
+                            "main\n"
+                            "    "
+                            "export_hdf(\n"
+                            "    "
+                            "~~~~~~~~~~^\n"
+                            "        "
+                            "uid=parsed.uid,\n"
+                            "        "
+                            "^^^^^^^^^^^^^^^\n"
+                            "    "
+                            "...<2 "
+                            "lines>...\n"
+                            "        "
+                            "results_profile=parsed.results_profile,\n"
+                            "        "
+                            "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"
+                            "    "
+                            ")\n"
+                            "    "
+                            "^\n"
+                            "  "
+                            "File "
+                            '"/home/beams0/S25IDCUSER/src/oaty-bar/src/oaty_bar/_export_hdf.py", '
+                            "line "
+                            "474, "
+                            "in "
+                            "export_hdf\n"
+                            "    "
+                            "asyncio.run(serialize_hdf(buff=target_file, "
+                            "run=run, "
+                            "results_runs=results_runs))\n"
+                            "    "
+                            "~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"
+                            "  "
+                            "File "
+                            '"/home/beams0/S25IDCUSER/src/oaty-bar/.pixi/envs/default/lib/python3.14/asyncio/runners.py", '
+                            "line "
+                            "204, "
+                            "in "
+                            "run\n"
+                            "    "
+                            "return "
+                            "runner.run(main)\n"
+                            "           "
+                            "~~~~~~~~~~^^^^^^\n"
+                            "  "
+                            "File "
+                            '"/home/beams0/S25IDCUSER/src/oaty-bar/.pixi/envs/default/lib/python3.14/asyncio/runners.py", '
+                            "line "
+                            "127, "
+                            "in "
+                            "run\n"
+                            "    "
+                            "return "
+                            "self._loop.run_until_complete(task)\n"
+                            "           "
+                            "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^\n"
+                            "  "
+                            "File "
+                            '"/home/beams0/S25IDCUSER/src/oaty-bar/.pixi/envs/default/lib/python3.14/asyncio/base_events.py", '
+                            "line "
+                            "719, "
+                            "in "
+                            "run_until_complete\n"
+                            "    "
+                            "return "
+                            "future.result()\n"
+                            "           "
+                            "~~~~~~~~~~~~~^^\n"
+                            "  "
+                            "File "
+                            '"/home/beams0/S25IDCUSER/src/oaty-bar/src/oaty_bar/_export_hdf.py", '
+                            "line "
+                            "431, "
+                            "in "
+                            "serialize_hdf\n"
+                            "    "
+                            "with "
+                            "h5py.File(buff, "
+                            'mode="w") '
+                            "as "
+                            "nxfile:\n"
+                            "         "
+                            "~~~~~~~~~^^^^^^^^^^^^^^^^\n"
+                            "  "
+                            "File "
+                            '"/home/beams0/S25IDCUSER/src/oaty-bar/.pixi/envs/default/lib/python3.14/site-packages/h5py/_hl/files.py", '
+                            "line "
+                            "555, "
+                            "in "
+                            "__init__\n"
+                            "    "
+                            "fid "
+                            "= "
+                            "make_fid(name, "
+                            "mode, "
+                            "userblock_size, "
+                            "fapl, "
+                            "fcpl, "
+                            "swmr=swmr)\n"
+                            "  "
+                            "File "
+                            '"/home/beams0/S25IDCUSER/src/oaty-bar/.pixi/envs/default/lib/python3.14/site-packages/h5py/_hl/files.py", '
+                            "line "
+                            "238, "
+                            "in "
+                            "make_fid\n"
+                            "    "
+                            "fid "
+                            "= "
+                            "h5f.create(name, "
+                            "h5f.ACC_TRUNC, "
+                            "fapl=fapl, "
+                            "fcpl=fcpl)\n"
+                            "  "
+                            "File "
+                            '"h5py/_objects.pyx", '
+                            "line "
+                            "54, "
+                            "in "
+                            "h5py._objects.with_phil.wrapper\n"
+                            "  "
+                            "File "
+                            '"h5py/_objects.pyx", '
+                            "line "
+                            "55, "
+                            "in "
+                            "h5py._objects.with_phil.wrapper\n"
+                            "  "
+                            "File "
+                            '"h5py/h5f.pyx", '
+                            "line "
+                            "126, "
+                            "in "
+                            "h5py.h5f.create\n"
+                            "PermissionError: "
+                            "[Errno "
+                            "13] "
+                            "Unable "
+                            "to "
+                            "synchronously "
+                            "create "
+                            "file "
+                            "(unable "
+                            "to "
+                            "open "
+                            "file: "
+                            "name "
+                            "= "
+                            "'/gdata/dm/25IDC/commissioning-2026-C2/202605142107-count-4ddd5c94.h5', "
+                            "errno "
+                            "= "
+                            "13, "
+                            "error "
+                            "message "
+                            "= "
+                            "'Permission "
+                            "denied', "
+                            "flags "
+                            "= "
+                            "13, "
+                            "o_flags "
+                            "= "
+                            "242)\n"
+                        ),
+                        "stdOut": "",
+                        "submitTime": 1778850775.6113808,
+                        "userAccount": "s25idcuser",
+                        "workingDir": None,
+                    }
+                },
+                "command": (
+                    "/APSshare/bin/pixi run "
+                    "--manifest-path "
+                    "~s25idcuser/src/oaty-bar "
+                    "export-hdf $run_uid "
+                    "$target_folder "
+                    "--raw-profile oaty-bar "
+                    "--results-profile "
+                    "oaty-bar-results"
+                ),
+                "nFailedChildProcesses": 1,
+                "nQueuedChildProcesses": 0,
+                "nRunningChildProcesses": 0,
+            },
+        },
+        "userAccount": "s25idcuser",
+        "version": 1,
+    },
+}
+
+
 base_uri = "http://localhost:12345"
 
 
@@ -216,12 +588,13 @@ async def test_get_workflows(httpx_mock, api):
 async def test_add_new_workflow(httpx_mock, api):
     # url="/dm/workflows/addWorkflow
     new_workflow = Workflow(**workflows[0])
+    print(new_workflow)
     url = httpx.URL(
         f"{base_uri}/dm/workflows/addWorkflow",
         params={
             "allowCurrentUsername": 0,
             "workflow": (
-                "b'ZXlKdVlXMWxJam9pWlhoaGJYQnNaUzB3TVNJc0ltOTNibVZ5SWpvaVpIVnRiWGxmZFhObGNpSXNJblZ6WlhKZllXTmpiM1Z1ZENJNkltUjFiVzE1WDNWelpYSWlMQ0prWlhOamNtbHdkR2x2YmlJNklsZHZjbXRtYkc5M0lFVjRZVzF3YkdVZ01ERWlMQ0pwWkNJNklqWTVaakJqTUdJeE5EUXdPV0l4WVRjME1UZzFOR0psTmlJc0luTjBZV2RsY3lJNmV5SXdNUzFUVkVGU1ZDSTZleUpqYjIxdFlXNWtJam9pTDJKcGJpOWtZWFJsSUNzbFdTVnRKV1FsU0NWTkpWTWlMQ0p2ZFhSd2RYUmZkbUZ5YVdGaWJHVmZjbVZuZFd4aGNsOWxlSEJ5WlhOemFXOXVjeUk2V3lJb1AxQThkR2x0WlZOMFlXMXdQaTRxS1NKZGZTd2lNREl0VFV0RVNWSWlPbnNpWTI5dGJXRnVaQ0k2SWk5aWFXNHZiV3RrYVhJZ0xYQWdMM1J0Y0M5M2IzSnJabXh2ZHk0a2RHbHRaVk4wWVcxd0lpd2liM1YwY0hWMFgzWmhjbWxoWW14bFgzSmxaM1ZzWVhKZlpYaHdjbVZ6YzJsdmJuTWlPbHRkZlN3aU1ETXRSVU5JVHlJNmV5SmpiMjF0WVc1a0lqb2lMMkpwYmk5bFkyaHZJRnhjWENKVFZFRlNWQ0JLVDBJZ1NVUTZJQ1JwWkZ4Y1hDSWdQaUF2ZEcxd0wzZHZjbXRtYkc5M0xpUjBhVzFsVTNSaGJYQXZKR2xrTG05MWRDSXNJbTkxZEhCMWRGOTJZWEpwWVdKc1pWOXlaV2QxYkdGeVgyVjRjSEpsYzNOcGIyNXpJanBiWFgwc0lqQTBMVTFFTlZOVlRTSTZleUpqYjIxdFlXNWtJam9pTDJKcGJpOXRaRFZ6ZFcwZ0pHWnBiR1ZRWVhSb0lId2dZM1YwSUMxbU1TQXRaRnhjWENJZ1hGeGNJaUlzSW05MWRIQjFkRjkyWVhKcFlXSnNaVjl5WldkMWJHRnlYMlY0Y0hKbGMzTnBiMjV6SWpwYklpZy9VRHh0WkRWVGRXMCtMaW9wSWwxOUxDSXdOUzFGUTBoUElqcDdJbU52YlcxaGJtUWlPaUpsWTJodklGeGNYQ0pHU1V4RklDUm1hV3hsVUdGMGFDQk5SRFVnVTFWTk9pQWtiV1ExVTNWdFhGeGNJaUErUGlBdmRHMXdMM2R2Y210bWJHOTNMaVIwYVcxbFUzUmhiWEF2Skdsa0xtOTFkQ0lzSW05MWRIQjFkRjkyWVhKcFlXSnNaVjl5WldkMWJHRnlYMlY0Y0hKbGMzTnBiMjV6SWpwYlhYMHNJakEyTFVSUFRrVWlPbnNpWTI5dGJXRnVaQ0k2SWk5aWFXNHZaV05vYnlCY1hGd2lVMVJQVUNCS1QwSWdTVVE2SUNScFpGeGNYQ0lnUGo0Z0wzUnRjQzkzYjNKclpteHZkeTRrZEdsdFpWTjBZVzF3THlScFpDNXZkWFFpTENKdmRYUndkWFJmZG1GeWFXRmliR1ZmY21WbmRXeGhjbDlsZUhCeVpYTnphVzl1Y3lJNlcxMTlmWDA9'"
+                "b'ZXlKdVlXMWxJam9pWlhoaGJYQnNaUzB3TVNJc0ltOTNibVZ5SWpvaVpIVnRiWGxmZFhObGNpSXNJblZ6WlhKQlkyTnZkVzUwSWpvaVpIVnRiWGxmZFhObGNpSXNJbVJsYzJOeWFYQjBhVzl1SWpvaVYyOXlhMlpzYjNjZ1JYaGhiWEJzWlNBd01TSXNJbWxrSWpvaU5qbG1NR013WWpFME5EQTVZakZoTnpReE9EVTBZbVUySWl3aWMzUmhaMlZ6SWpwN0lqQXhMVk5VUVZKVUlqcDdJbU52YlcxaGJtUWlPaUl2WW1sdUwyUmhkR1VnS3lWWkpXMGxaQ1ZJSlUwbFV5SXNJbTkxZEhCMWRGWmhjbWxoWW14bFVtVm5aWGhNYVhOMElqcGJJaWcvVUR4MGFXMWxVM1JoYlhBK0xpb3BJbDE5TENJd01pMU5TMFJKVWlJNmV5SmpiMjF0WVc1a0lqb2lMMkpwYmk5dGEyUnBjaUF0Y0NBdmRHMXdMM2R2Y210bWJHOTNMaVIwYVcxbFUzUmhiWEFpTENKdmRYUndkWFJXWVhKcFlXSnNaVkpsWjJWNFRHbHpkQ0k2VzExOUxDSXdNeTFGUTBoUElqcDdJbU52YlcxaGJtUWlPaUl2WW1sdUwyVmphRzhnWEZ4Y0lsTlVRVkpVSUVwUFFpQkpSRG9nSkdsa1hGeGNJaUErSUM5MGJYQXZkMjl5YTJac2IzY3VKSFJwYldWVGRHRnRjQzhrYVdRdWIzVjBJaXdpYjNWMGNIVjBWbUZ5YVdGaWJHVlNaV2RsZUV4cGMzUWlPbHRkZlN3aU1EUXRUVVExVTFWTklqcDdJbU52YlcxaGJtUWlPaUl2WW1sdUwyMWtOWE4xYlNBa1ptbHNaVkJoZEdnZ2ZDQmpkWFFnTFdZeElDMWtYRnhjSWlCY1hGd2lJaXdpYjNWMGNIVjBWbUZ5YVdGaWJHVlNaV2RsZUV4cGMzUWlPbHNpS0Q5UVBHMWtOVk4xYlQ0dUtpa2lYWDBzSWpBMUxVVkRTRThpT25zaVkyOXRiV0Z1WkNJNkltVmphRzhnWEZ4Y0lrWkpURVVnSkdacGJHVlFZWFJvSUUxRU5TQlRWVTA2SUNSdFpEVlRkVzFjWEZ3aUlENCtJQzkwYlhBdmQyOXlhMlpzYjNjdUpIUnBiV1ZUZEdGdGNDOGthV1F1YjNWMElpd2liM1YwY0hWMFZtRnlhV0ZpYkdWU1pXZGxlRXhwYzNRaU9sdGRmU3dpTURZdFJFOU9SU0k2ZXlKamIyMXRZVzVrSWpvaUwySnBiaTlsWTJodklGeGNYQ0pUVkU5UUlFcFBRaUJKUkRvZ0pHbGtYRnhjSWlBK1BpQXZkRzF3TDNkdmNtdG1iRzkzTGlSMGFXMWxVM1JoYlhBdkpHbGtMbTkxZENJc0ltOTFkSEIxZEZaaGNtbGhZbXhsVW1WblpYaE1hWE4wSWpwYlhYMTlmUT09'"
             ),
         },
     )
@@ -244,7 +617,7 @@ async def test_set_workflow(httpx_mock, api):
         params={
             "allowCurrentUsername": 0,
             "workflow": (
-                "b'ZXlKdVlXMWxJam9pWlhoaGJYQnNaUzB3TVNJc0ltOTNibVZ5SWpvaVpIVnRiWGxmZFhObGNpSXNJblZ6WlhKZllXTmpiM1Z1ZENJNkltUjFiVzE1WDNWelpYSWlMQ0prWlhOamNtbHdkR2x2YmlJNklsZHZjbXRtYkc5M0lFVjRZVzF3YkdVZ01ERWlMQ0pwWkNJNklqWTVaakJqTUdJeE5EUXdPV0l4WVRjME1UZzFOR0psTmlJc0luTjBZV2RsY3lJNmV5SXdNUzFUVkVGU1ZDSTZleUpqYjIxdFlXNWtJam9pTDJKcGJpOWtZWFJsSUNzbFdTVnRKV1FsU0NWTkpWTWlMQ0p2ZFhSd2RYUmZkbUZ5YVdGaWJHVmZjbVZuZFd4aGNsOWxlSEJ5WlhOemFXOXVjeUk2V3lJb1AxQThkR2x0WlZOMFlXMXdQaTRxS1NKZGZTd2lNREl0VFV0RVNWSWlPbnNpWTI5dGJXRnVaQ0k2SWk5aWFXNHZiV3RrYVhJZ0xYQWdMM1J0Y0M5M2IzSnJabXh2ZHk0a2RHbHRaVk4wWVcxd0lpd2liM1YwY0hWMFgzWmhjbWxoWW14bFgzSmxaM1ZzWVhKZlpYaHdjbVZ6YzJsdmJuTWlPbHRkZlN3aU1ETXRSVU5JVHlJNmV5SmpiMjF0WVc1a0lqb2lMMkpwYmk5bFkyaHZJRnhjWENKVFZFRlNWQ0JLVDBJZ1NVUTZJQ1JwWkZ4Y1hDSWdQaUF2ZEcxd0wzZHZjbXRtYkc5M0xpUjBhVzFsVTNSaGJYQXZKR2xrTG05MWRDSXNJbTkxZEhCMWRGOTJZWEpwWVdKc1pWOXlaV2QxYkdGeVgyVjRjSEpsYzNOcGIyNXpJanBiWFgwc0lqQTBMVTFFTlZOVlRTSTZleUpqYjIxdFlXNWtJam9pTDJKcGJpOXRaRFZ6ZFcwZ0pHWnBiR1ZRWVhSb0lId2dZM1YwSUMxbU1TQXRaRnhjWENJZ1hGeGNJaUlzSW05MWRIQjFkRjkyWVhKcFlXSnNaVjl5WldkMWJHRnlYMlY0Y0hKbGMzTnBiMjV6SWpwYklpZy9VRHh0WkRWVGRXMCtMaW9wSWwxOUxDSXdOUzFGUTBoUElqcDdJbU52YlcxaGJtUWlPaUpsWTJodklGeGNYQ0pHU1V4RklDUm1hV3hsVUdGMGFDQk5SRFVnVTFWTk9pQWtiV1ExVTNWdFhGeGNJaUErUGlBdmRHMXdMM2R2Y210bWJHOTNMaVIwYVcxbFUzUmhiWEF2Skdsa0xtOTFkQ0lzSW05MWRIQjFkRjkyWVhKcFlXSnNaVjl5WldkMWJHRnlYMlY0Y0hKbGMzTnBiMjV6SWpwYlhYMHNJakEyTFVSUFRrVWlPbnNpWTI5dGJXRnVaQ0k2SWk5aWFXNHZaV05vYnlCY1hGd2lVMVJQVUNCS1QwSWdTVVE2SUNScFpGeGNYQ0lnUGo0Z0wzUnRjQzkzYjNKclpteHZkeTRrZEdsdFpWTjBZVzF3THlScFpDNXZkWFFpTENKdmRYUndkWFJmZG1GeWFXRmliR1ZmY21WbmRXeGhjbDlsZUhCeVpYTnphVzl1Y3lJNlcxMTlmWDA9'"
+                "b'ZXlKdVlXMWxJam9pWlhoaGJYQnNaUzB3TVNJc0ltOTNibVZ5SWpvaVpIVnRiWGxmZFhObGNpSXNJblZ6WlhKQlkyTnZkVzUwSWpvaVpIVnRiWGxmZFhObGNpSXNJbVJsYzJOeWFYQjBhVzl1SWpvaVYyOXlhMlpzYjNjZ1JYaGhiWEJzWlNBd01TSXNJbWxrSWpvaU5qbG1NR013WWpFME5EQTVZakZoTnpReE9EVTBZbVUySWl3aWMzUmhaMlZ6SWpwN0lqQXhMVk5VUVZKVUlqcDdJbU52YlcxaGJtUWlPaUl2WW1sdUwyUmhkR1VnS3lWWkpXMGxaQ1ZJSlUwbFV5SXNJbTkxZEhCMWRGWmhjbWxoWW14bFVtVm5aWGhNYVhOMElqcGJJaWcvVUR4MGFXMWxVM1JoYlhBK0xpb3BJbDE5TENJd01pMU5TMFJKVWlJNmV5SmpiMjF0WVc1a0lqb2lMMkpwYmk5dGEyUnBjaUF0Y0NBdmRHMXdMM2R2Y210bWJHOTNMaVIwYVcxbFUzUmhiWEFpTENKdmRYUndkWFJXWVhKcFlXSnNaVkpsWjJWNFRHbHpkQ0k2VzExOUxDSXdNeTFGUTBoUElqcDdJbU52YlcxaGJtUWlPaUl2WW1sdUwyVmphRzhnWEZ4Y0lsTlVRVkpVSUVwUFFpQkpSRG9nSkdsa1hGeGNJaUErSUM5MGJYQXZkMjl5YTJac2IzY3VKSFJwYldWVGRHRnRjQzhrYVdRdWIzVjBJaXdpYjNWMGNIVjBWbUZ5YVdGaWJHVlNaV2RsZUV4cGMzUWlPbHRkZlN3aU1EUXRUVVExVTFWTklqcDdJbU52YlcxaGJtUWlPaUl2WW1sdUwyMWtOWE4xYlNBa1ptbHNaVkJoZEdnZ2ZDQmpkWFFnTFdZeElDMWtYRnhjSWlCY1hGd2lJaXdpYjNWMGNIVjBWbUZ5YVdGaWJHVlNaV2RsZUV4cGMzUWlPbHNpS0Q5UVBHMWtOVk4xYlQ0dUtpa2lYWDBzSWpBMUxVVkRTRThpT25zaVkyOXRiV0Z1WkNJNkltVmphRzhnWEZ4Y0lrWkpURVVnSkdacGJHVlFZWFJvSUUxRU5TQlRWVTA2SUNSdFpEVlRkVzFjWEZ3aUlENCtJQzkwYlhBdmQyOXlhMlpzYjNjdUpIUnBiV1ZUZEdGdGNDOGthV1F1YjNWMElpd2liM1YwY0hWMFZtRnlhV0ZpYkdWU1pXZGxlRXhwYzNRaU9sdGRmU3dpTURZdFJFOU9SU0k2ZXlKamIyMXRZVzVrSWpvaUwySnBiaTlsWTJodklGeGNYQ0pUVkU5UUlFcFBRaUJKUkRvZ0pHbGtYRnhjSWlBK1BpQXZkRzF3TDNkdmNtdG1iRzkzTGlSMGFXMWxVM1JoYlhBdkpHbGtMbTkxZENJc0ltOTFkSEIxZEZaaGNtbGhZbXhsVW1WblpYaE1hWE4wSWpwYlhYMTlmUT09'"
             ),
         },
     )
@@ -266,13 +639,35 @@ async def test_update_workflow(httpx_mock, api):
         params={
             "allowCurrentUsername": 0,
             "workflow": (
-                "b'ZXlKdVlXMWxJam9pWlhoaGJYQnNaUzB3TVNJc0ltOTNibVZ5SWpvaVpIVnRiWGxmZFhObGNpSXNJblZ6WlhKZllXTmpiM1Z1ZENJNkltUjFiVzE1WDNWelpYSWlMQ0prWlhOamNtbHdkR2x2YmlJNkltRWdZbVYwZEdWeUlHUmxjMk55YVhCMGFXOXVJaXdpYVdRaU9pSTJPV1l3WXpCaU1UUTBNRGxpTVdFM05ERTROVFJpWlRZaUxDSnpkR0ZuWlhNaU9uc2lNREV0VTFSQlVsUWlPbnNpWTI5dGJXRnVaQ0k2SWk5aWFXNHZaR0YwWlNBckpWa2xiU1ZrSlVnbFRTVlRJaXdpYjNWMGNIVjBYM1poY21saFlteGxYM0psWjNWc1lYSmZaWGh3Y21WemMybHZibk1pT2xzaUtEOVFQSFJwYldWVGRHRnRjRDR1S2lraVhYMHNJakF5TFUxTFJFbFNJanA3SW1OdmJXMWhibVFpT2lJdlltbHVMMjFyWkdseUlDMXdJQzkwYlhBdmQyOXlhMlpzYjNjdUpIUnBiV1ZUZEdGdGNDSXNJbTkxZEhCMWRGOTJZWEpwWVdKc1pWOXlaV2QxYkdGeVgyVjRjSEpsYzNOcGIyNXpJanBiWFgwc0lqQXpMVVZEU0U4aU9uc2lZMjl0YldGdVpDSTZJaTlpYVc0dlpXTm9ieUJjWEZ3aVUxUkJVbFFnU2s5Q0lFbEVPaUFrYVdSY1hGd2lJRDRnTDNSdGNDOTNiM0pyWm14dmR5NGtkR2x0WlZOMFlXMXdMeVJwWkM1dmRYUWlMQ0p2ZFhSd2RYUmZkbUZ5YVdGaWJHVmZjbVZuZFd4aGNsOWxlSEJ5WlhOemFXOXVjeUk2VzExOUxDSXdOQzFOUkRWVFZVMGlPbnNpWTI5dGJXRnVaQ0k2SWk5aWFXNHZiV1ExYzNWdElDUm1hV3hsVUdGMGFDQjhJR04xZENBdFpqRWdMV1JjWEZ3aUlGeGNYQ0lpTENKdmRYUndkWFJmZG1GeWFXRmliR1ZmY21WbmRXeGhjbDlsZUhCeVpYTnphVzl1Y3lJNld5SW9QMUE4YldRMVUzVnRQaTRxS1NKZGZTd2lNRFV0UlVOSVR5STZleUpqYjIxdFlXNWtJam9pWldOb2J5QmNYRndpUmtsTVJTQWtabWxzWlZCaGRHZ2dUVVExSUZOVlRUb2dKRzFrTlZOMWJWeGNYQ0lnUGo0Z0wzUnRjQzkzYjNKclpteHZkeTRrZEdsdFpWTjBZVzF3THlScFpDNXZkWFFpTENKdmRYUndkWFJmZG1GeWFXRmliR1ZmY21WbmRXeGhjbDlsZUhCeVpYTnphVzl1Y3lJNlcxMTlMQ0l3TmkxRVQwNUZJanA3SW1OdmJXMWhibVFpT2lJdlltbHVMMlZqYUc4Z1hGeGNJbE5VVDFBZ1NrOUNJRWxFT2lBa2FXUmNYRndpSUQ0K0lDOTBiWEF2ZDI5eWEyWnNiM2N1SkhScGJXVlRkR0Z0Y0M4a2FXUXViM1YwSWl3aWIzVjBjSFYwWDNaaGNtbGhZbXhsWDNKbFozVnNZWEpmWlhod2NtVnpjMmx2Ym5NaU9sdGRmWDE5'"
+                "b'ZXlKdVlXMWxJam9pWlhoaGJYQnNaUzB3TVNJc0ltOTNibVZ5SWpvaVpIVnRiWGxmZFhObGNpSXNJblZ6WlhKQlkyTnZkVzUwSWpvaVpIVnRiWGxmZFhObGNpSXNJbVJsYzJOeWFYQjBhVzl1SWpvaVlTQmlaWFIwWlhJZ1pHVnpZM0pwY0hScGIyNGlMQ0pwWkNJNklqWTVaakJqTUdJeE5EUXdPV0l4WVRjME1UZzFOR0psTmlJc0luTjBZV2RsY3lJNmV5SXdNUzFUVkVGU1ZDSTZleUpqYjIxdFlXNWtJam9pTDJKcGJpOWtZWFJsSUNzbFdTVnRKV1FsU0NWTkpWTWlMQ0p2ZFhSd2RYUldZWEpwWVdKc1pWSmxaMlY0VEdsemRDSTZXeUlvUDFBOGRHbHRaVk4wWVcxd1BpNHFLU0pkZlN3aU1ESXRUVXRFU1ZJaU9uc2lZMjl0YldGdVpDSTZJaTlpYVc0dmJXdGthWElnTFhBZ0wzUnRjQzkzYjNKclpteHZkeTRrZEdsdFpWTjBZVzF3SWl3aWIzVjBjSFYwVm1GeWFXRmliR1ZTWldkbGVFeHBjM1FpT2x0ZGZTd2lNRE10UlVOSVR5STZleUpqYjIxdFlXNWtJam9pTDJKcGJpOWxZMmh2SUZ4Y1hDSlRWRUZTVkNCS1QwSWdTVVE2SUNScFpGeGNYQ0lnUGlBdmRHMXdMM2R2Y210bWJHOTNMaVIwYVcxbFUzUmhiWEF2Skdsa0xtOTFkQ0lzSW05MWRIQjFkRlpoY21saFlteGxVbVZuWlhoTWFYTjBJanBiWFgwc0lqQTBMVTFFTlZOVlRTSTZleUpqYjIxdFlXNWtJam9pTDJKcGJpOXRaRFZ6ZFcwZ0pHWnBiR1ZRWVhSb0lId2dZM1YwSUMxbU1TQXRaRnhjWENJZ1hGeGNJaUlzSW05MWRIQjFkRlpoY21saFlteGxVbVZuWlhoTWFYTjBJanBiSWlnL1VEeHRaRFZUZFcwK0xpb3BJbDE5TENJd05TMUZRMGhQSWpwN0ltTnZiVzFoYm1RaU9pSmxZMmh2SUZ4Y1hDSkdTVXhGSUNSbWFXeGxVR0YwYUNCTlJEVWdVMVZOT2lBa2JXUTFVM1Z0WEZ4Y0lpQStQaUF2ZEcxd0wzZHZjbXRtYkc5M0xpUjBhVzFsVTNSaGJYQXZKR2xrTG05MWRDSXNJbTkxZEhCMWRGWmhjbWxoWW14bFVtVm5aWGhNYVhOMElqcGJYWDBzSWpBMkxVUlBUa1VpT25zaVkyOXRiV0Z1WkNJNklpOWlhVzR2WldOb2J5QmNYRndpVTFSUFVDQktUMElnU1VRNklDUnBaRnhjWENJZ1BqNGdMM1J0Y0M5M2IzSnJabXh2ZHk0a2RHbHRaVk4wWVcxd0x5UnBaQzV2ZFhRaUxDSnZkWFJ3ZFhSV1lYSnBZV0pzWlZKbFoyVjRUR2x6ZENJNlcxMTlmWDA9'"
             ),
         },
     )
     httpx_mock.add_response(url=url, method="PUT", json=workflows[0])
     update = {"description": "a better description"}
     await maybe_await(api.update_workflow(name="example-01", update=update))
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("api", ["sync", "async"], indirect=True)
+async def test_get_processing_job(httpx_mock, api):
+    url = httpx.URL(
+        f"{base_uri}/dm/processingJobsByOwner/dummy_user/{failed_job['id']}",
+    )
+    httpx_mock.add_response(url=url, json=failed_job)
+    job0 = await maybe_await(
+        api.processing_job(id="7e01fb97-44b1-4b7f-b1ca-d08624eb8c77")
+    )
+    assert job0.file_count == 1
+    assert job0.end.year == 2026
+    assert job0.error_message == ""
+    assert job0.id == "7e01fb97-44b1-4b7f-b1ca-d08624eb8c77"
+    assert job0.workflow.name == "simple"
+    assert job0.workflow.stages["030-EXPORT"].child_processes["2"].status == "failed"
+    assert (
+        "Traceback"
+        in job0.workflow.stages["030-EXPORT"].child_processes["2"].standard_error
+    )
 
 
 @pytest.mark.asyncio

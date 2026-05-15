@@ -257,6 +257,22 @@ class AsyncClient(Client):
         )
         return await self.serve_requests(requests)
 
+    async def processing_job(self, id: str) -> processing.Job:
+        """Retrieve a single processing job from the processing API.
+
+        Parameters
+        ==========
+        id
+          The unique identifier in the API for the desired job.
+
+        """
+        requests = processing.request_job(
+            job_id=id,
+            owner=self.username,
+            context=self._proc_context,
+        )
+        return await self.serve_requests(requests)
+
     async def processing_jobs(
         self, limit: int = 5000, offset: int = 0
     ) -> list[processing.Job]:
@@ -445,6 +461,22 @@ class SyncClient(Client):
         )
         return self.serve_requests(requests)
 
+    def processing_job(self, id: str) -> processing.Job:
+        """Retrieve a single processing job from the processing API.
+
+        Parameters
+        ==========
+        id
+          The unique identifier in the API for the desired job.
+
+        """
+        requests = processing.request_job(
+            job_id=id,
+            owner=self.username,
+            context=self._proc_context,
+        )
+        return self.serve_requests(requests)
+
     def processing_jobs(
         self, limit: int = 5000, offset: int = 0
     ) -> list[processing.Job]:
@@ -459,9 +491,9 @@ class SyncClient(Client):
 
         """
         requests = processing.request_jobs(
-            owner=self.username,
             limit=limit,
             offset=offset,
+            owner=self.username,
             context=self._proc_context,
         )
         return self.serve_requests(requests)
