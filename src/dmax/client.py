@@ -1,11 +1,12 @@
 import os
 from collections.abc import Mapping
 from typing import Any
+from pathlib import Path
 
 import httpx
 
 from . import data_storage as ds
-from . import processing, scheduling
+from . import processing, scheduling, data_archive
 from .context import AsyncContext, SyncContext
 
 
@@ -73,6 +74,7 @@ class Client:
         scheduling_uri: str = "",
         data_storage_uri: str = "",
         processing_uri: str = "",
+        data_archive_uri: str = "",
     ):
         """*username*, *password*, and *station_name* are all assigned by the
         data management group.
@@ -122,6 +124,15 @@ class Client:
             base_uri=uri, username=self.username, password=self.password
         )
 
+        uri = uri_or_default(
+            uri=data_archive_uri,
+            env_variable="DM_DAQ_WEB_SERVICE_URL",
+            default="{vm_host}:33336",
+        )
+        self._daq_context = self.Context(
+            base_uri=uri, username=self.username, password=self.password
+        )
+        
 
 class AsyncClient(Client):
     """Client for the APS data management REST API."""
@@ -199,6 +210,15 @@ class AsyncClient(Client):
             name=name,
             station_name=self.station_name,
             context=self._ds_context,
+        )
+        return await self.serve_requests(requests)
+
+    async def start_data_archive_queue(self, source_directory: Path | str, experiment_name: str):
+        requests = data_archive.post_daq(
+            source_directory=source_directory,
+            experiment_name=experiment_name,
+            owner=self.username,
+            context=self._daq_context,
         )
         return await self.serve_requests(requests)
 
@@ -402,6 +422,15 @@ class SyncClient(Client):
             name=name,
             station_name=self.station_name,
             context=self._ds_context,
+        )
+        return self.serve_requests(requests)
+
+    async def start_data_archive_queue(self, source_directory: Path | str, experiment_name: str):
+        requests = data_archive.post_daq(
+            source_directory=source_directory,
+            experiment_name=experiment_name,
+            owner=self.username,
+            context=self._daq_context,
         )
         return self.serve_requests(requests)
 
