@@ -1,12 +1,13 @@
 import os
 from collections.abc import Mapping
-from typing import Any
 from pathlib import Path
+from typing import Any
 
 import httpx
 
+from . import data_archive
 from . import data_storage as ds
-from . import processing, scheduling, data_archive
+from . import processing, scheduling
 from .context import AsyncContext, SyncContext
 
 
@@ -132,7 +133,7 @@ class Client:
         self._daq_context = self.Context(
             base_uri=uri, username=self.username, password=self.password
         )
-        
+
 
 class AsyncClient(Client):
     """Client for the APS data management REST API."""
@@ -213,11 +214,37 @@ class AsyncClient(Client):
         )
         return await self.serve_requests(requests)
 
-    async def start_data_archive_queue(self, source_directory: Path | str, experiment_name: str):
+    async def start_data_archive_queue(
+        self,
+        source_directory: Path | str,
+        experiment_name: str,
+        skip: str | None = None,
+    ) -> data_archive.DataArchiveQueue:
+        """Start a data archive queue (DAQ) to upload new files.
+
+        Parameters
+        ==========
+        source_directory
+          Where to watch for new files.
+        experiment_name
+          The DM experiment to attach to this DAQ.
+        skip
+          A comma-separated list of Unix shell-style wildcard patterns
+          of paths relative to the data directory that should not be
+          processed (e.g., "dir1/sample123/*.h5"); if not provided,
+          all files will be processed
+
+        Returns
+        =======
+        daq
+          A data structure describing the newly created DAQ.
+
+        """
+
         requests = data_archive.post_daq(
             source_directory=source_directory,
+            skip=skip,
             experiment_name=experiment_name,
-            owner=self.username,
             context=self._daq_context,
         )
         return await self.serve_requests(requests)
@@ -425,11 +452,36 @@ class SyncClient(Client):
         )
         return self.serve_requests(requests)
 
-    async def start_data_archive_queue(self, source_directory: Path | str, experiment_name: str):
+    def start_data_archive_queue(
+        self,
+        source_directory: Path | str,
+        experiment_name: str,
+        skip: str | None = None,
+    ) -> data_archive.DataArchiveQueue:
+        """Start a data archive queue (DAQ) to upload new files.
+
+        Parameters
+        ==========
+        source_directory
+          Where to watch for new files.
+        experiment_name
+          The DM experiment to attach to this DAQ.
+        skip
+          A comma-separated list of Unix shell-style wildcard patterns
+          of paths relative to the data directory that should not be
+          processed (e.g., "dir1/sample123/*.h5"); if not provided,
+          all files will be processed
+
+        Returns
+        =======
+        daq
+          A data structure describing the newly created DAQ.
+
+        """
         requests = data_archive.post_daq(
             source_directory=source_directory,
+            skip=skip,
             experiment_name=experiment_name,
-            owner=self.username,
             context=self._daq_context,
         )
         return self.serve_requests(requests)
